@@ -1,0 +1,33 @@
+gnuplot interfaces in ANSI C
+Description
+gnuplot is a freely available, command-driven graphical display tool for Unix. It compiles and works quite well on a number of Unix flavours as well as other operating systems.
+The following module enables sending display requests to a gnuplot session through simple ANSI C calls. This module is placed in the public domain. I do appreciate a mention in your code, documentation, or web pages, if you happen to use this module.
+Notice that gnuplot_i talks to a gnuplot process by means of POSIX pipes. This implies that the underlying operating system has the notion of processes and pipes, and advertizes them in a POSIX fashion. Since Windows does not respect this standard, this module will not compile on it, unless you have a compiler that offers a popen call on that platform or simulates it.
+Do not even try to ask me about porting this module to windows, I have no idea how to do that. If you really must install gnuplot and gnuplot_i on Windows, you may want to have a look at the following guide:
+* Installing Cygwin on Windows XP
+The author describes a complete Cygwin installation, including how to run gnuplot under Windows and control it from C++ using gnuplot_i.
+On-line documentation
+* Browse the online documentation (this set of HTML files is also included in the distribution tar file)
+* Frequently Asked Questions about gnuplot_i
+Download section
+* Download gnuplot_i-2.10.tar.gz
+* Download gnuplot_i-2.11.tar.gz
+Links
+* Gnuplot central
+* Bernhard Reiter's very complete gnuplot page
+C++ interfaces to gnuplot
+An interface from C++ to gnuplot has been derived from gnuplot_i by Rajarshi Guha. You can find it from the following web site, following the links to Code/C++ and then Gnuplot:
+* http://jijo.cjb.net/
+Another interface from C++ to gnuplot has been derived from gnuplot_i by Viktor Chyzhdzenka. His version has all you need to compile the code under MSVC 6.0. You can download it from here:
+* GNUPlot1.zip (7.8k)
+Python interface to gnuplot
+Gnuplot is also interfaced to Python. You can either try the following interface program: Python interface to gnuplot or you can use the following module: 28 lines of object-oriented software development (including a lengthy example), that lets you pilot as many gnuplot sessions as you want from a Python script :-). This makes use of pipes, so this should work everywhere Python pipes work.
+* See gnuplot.py (617 chars)
+Fortran 90/95 interface to gnuplot
+This project offers interfaces to gnuplot from Fortran 90/95:
+* http://sourceforge.net/projects/gnuplotfortran
+Perl interface to gnuplot
+Fritz Mehner offers a set of Perl interfaces to gnuplot, the API is fairly close to what gnuplot_i offers:
+* http://lug.fh-swf.de/perl/
+Last modified: Apr 2012 by N. Devillard <ndevilla AT free DOT fr>
+
