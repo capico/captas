@@ -50,3 +50,22 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+#
+/doc
+*.rtf
+*.pdf
+todo.txt
+# obj folder
+/obj
+# bin folder
+/bin
+*Thumbs.db
+*~
+*#
+*.bak
+*.cbp
+*.cscope_file_list
+*.depend
+*.layout
+
