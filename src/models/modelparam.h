@@ -30,28 +30,28 @@ typedef struct
 
     /* fluid and reservoir properties */
     double
-        B,	// formation volume factor
+        B,	    // formation volume factor
         qB,
-        phi,// porosity
-        mu,	// viscosity
-        ct, // total compressibility
-        rw, // wellbore radius
-        h;	// formation thickness
+        phi,    // porosity
+        mu,	    // viscosity
+        ct,     // total compressibility
+        rw,     // wellbore radius
+        h;	    // formation thickness
 
     /* wellbore/reservoir parameters */
     double
-        k,	// permeability
-        C,	// wellbore storage
-        S,	// skin factor
-        pi, // initial pressure
-        re, // external radius
-        w1, // distance to fault 1
-        w2, // distance to fault 2
-        L,  // distance to the sealing fault
-        w1x,// distance to fault 1, x direction
-        w2x,// distance to fault 2, x direction
-        w1y,// distance to fault 1, y direction
-        w2y;// distance to fault 2, y direction
+        k,	    // permeability
+        C,	    // wellbore storage
+        S,	    // skin factor
+        pi,     // initial pressure
+        re,     // external radius
+        w1,     // distance to fault 1
+        w2,     // distance to fault 2
+        L,      // distance to the sealing fault
+        w1x,    // distance to fault 1, x direction
+        w2x,    // distance to fault 2, x direction
+        w1y,    // distance to fault 1, y direction
+        w2y;    // distance to fault 2, y direction
 
     /* Stehfest's parameter */
     int nstehfest;

@@ -69,3 +69,4 @@ todo.txt
 *.depend
 *.layout
 
+/examples/Simulated_rect_BU
