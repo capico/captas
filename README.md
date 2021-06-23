@@ -1,7 +1,15 @@
 # captas
 ## Computer Aided Pressure Transient Analysis and Simulation – CAPTAS?
 
-captas is a well testing tool for pressure transient analysis.
+CAPTAS is a program, with a very simple interface, to fit pressure test data to a mathematical model, using the Levenberg-Marquardt method, as part of a well test interpretation.
+The program is useful to refine the estimates you have made by, for example, graphical methods, and to determine the confidence intervals on the estimated parameter values.
+
+The input file, with .ini extension, contains sections and, within each section, keys (parameters). Each section begins with a sentence enclosed in square brackets, followed by identifiers for the parameters, the equal sign, and the parameter value, which can be a number or a string.
+For example:
+
+[Title]
+title  = Simulated Build Up;
+caseid = BU test 1;
 
 ## Lincense
 
