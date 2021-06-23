@@ -11,6 +11,15 @@ For example:
 title  = Simulated Build Up;
 caseid = BU test 1;
 
+When a semicolon appears after the value of a parameter, the rest of the line is considered as a comment. Lines starting with the # character are also considered comments. There is no case difference in the names of sections or parameters.
+The sections and parameters are as follows:
+
+· Title: used to identify the test, it accepts two string parameters: title and caseid.
+· Program mode: its only parameter, mode, determines whether the program is executed to adjust test data (mode = 0) or as an analytical test simulator (mode = 1, not programmed yet).
+· Units system: its only parameter, units, specifies the system of units used for input and output data. The value 0 corresponds to the oilfield system and 1 to the ANP system.
+· Test description: it is the section with the well test data and the well/reservoir system data. Its parameters are:
+· testtype: identifies the type of test, according to the following values: 0 corresponds to a test with multiple flow rates, with pressures in more than one flow period (see example Gringarten_1979); 1 is for a production test (initial) with constant rate; 2 is for a pressure build up test, after a period of production with constant rate (see example Bourdet_1983_1); 3 for an injection test (initial), with constant flow rate; 4 is for a falloff test, after a period of constant injection rate; 5 to a period of zero flow rate, preceded by periods with different flow rates; and 6 is for a period with positive flow rate, preceded by periods with different flow rates.
+
 ## Lincense
 
 This library is distributed under the GNU General Public License, version 3 or later (GPLv3+).
