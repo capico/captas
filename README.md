@@ -65,7 +65,7 @@ The program uses open source libraries:
  - gls (https://www.gnu.org/software/gsl/), for math functions. 
  - The Levenberg-Marquardt method is based on the implementation of the MINPACK library (https://www.netlib.org/minpack/), whose routines have been translated to the C language.
 
-In order to display the plots, the gnuplot program should be installed.
+In order to display the plots, the gnuplot program (http://www.gnuplot.info/) should be installed.
 
 ### Plataform
 
