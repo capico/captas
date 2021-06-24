@@ -1,7 +1,7 @@
-# Computer Aided Pressure Transient Analysis and Simulation – CAPTAS?
+# Computer Aided Pressure Transient Analysis and Simulation – captas?
 
-CAPTAS is a program, with a very simple interface, to fit pressure test data to a mathematical model, using the Levenberg-Marquardt method, as part of a well test interpretation.
-The program is useful to refine the estimates you have made by, for example, graphical methods, and to determine the confidence intervals on the estimated parameter values.
+**captas** is a program for the interpretation and simulation of pressure tests in wells. The program fits the pressure test data to a mathematical model, using the Levenberg-Marquardt method, as part of a well test interpretation. It is useful to refine the estimates you have made by, for example, graphical methods, and to determine the confidence intervals on the estimated parameter values.
+It contains several analytical solutions and their analytical derivatives and should be relatively easy to include others. In case the analytical derivatives for the Jacobian calculation are not available, it is possible to use numerical derivatives by finite differences.
 
 The input file, with `.ini` extension, contains sections and, within each section, keys (parameters). Each section begins with a sentence enclosed in square brackets, followed by identifiers for the parameters, the equal sign, and the parameter value, which can be a number or a string.
 For example:
@@ -52,7 +52,7 @@ indicates that the well produced with a flow rate of 250.0 between times 0.0 and
  - `Regression parameters derivatives`: in this section you specify the types of derivatives with which the Jacobian is calculated, for the Levenberg-Marquard method. The type of derivative is given by the variable formed by the prefix `jac_` and the name of the parameter, for example, `jac_k` = 0. The options are: 0 for analytic derivatives, 1 for forward finite differences, -1 for backward finite differences and 2 for centered finite differences. The default value is 2. Analytical derivatives are available for all models with the exception of the models for circular homogeneous reservoir with constant pressure at the boundary (3) and rectangular homogeneous reservoir with impermeable boundaries (7).
  - `Derivative parameters`: in this section the `Lder` parameter indicates the differentiation interval in the calculation of the logarithmic derivative (values between 0.0 and 0.3).
  - `Stehfest parameters`: in this section the `nstehfest` parameter is the number of terms in the Stehfest method, used in the numerical inversion of solutions in Laplace space. Allowed values are even numbers between 4 and 20, with 12 being the default.
- - `Output`: this section specifies the output text file, including its relative path, in the `outfile` parameter. When gnuplot is available, the non-zero `plots` parameter causes graphs to be shown with the data and the solution. For all types of tests a Cartesian graph of pressure vs. time is shown. For tests that fit only one flow period (`Test description:testtype` different from zero), a semi-logarithmic plot of pressure vs. the equivalent time and a graph of the pressure drop and its logarithmic derivative with realtion to the equivalent time vs. the elapsed time are shown. The pressure drop is defined as deltap = sign*(p0 – p(t)), with sign = -1 for injection and pressure buildup tests and sign = 1 for the others. p0 is the pressure at the beginning of the period under analysis, that is, p0 = p(dt = 0). When the pressure at the beginning of the test is not found in the first line of the `pressfile` file, it is replaced by whatever value is in place.
+ - `Output`: this section specifies the output text file, including its relative path, in the `outfile` parameter. When gnuplot is available, the non-zero `plots` parameter causes graphs to be shown with the data and the solution. For all types of tests a Cartesian graph of pressure vs. time is shown. For tests that fit only one flow period (`Test description:testtype` different from zero), a semi-logarithmic plot of pressure vs. the equivalent time and a graph of the pressure drop and its logarithmic derivative with relation to the equivalent time vs. the elapsed time are shown. The pressure drop is defined as deltap = sign*(p0 – p(t)), with sign = -1 for injection and pressure buildup tests and sign = 1 for the others. p0 is the pressure at the beginning of the period under analysis, that is, p0 = p(dt = 0). When the pressure at the beginning of the test is not found in the first line of the `pressfile` file, it is replaced by whatever value is in place.
 
 ## License
 
@@ -68,9 +68,9 @@ The program uses open source libraries:
  - gls (https://www.gnu.org/software/gsl/), for math functions. 
  - The Levenberg-Marquardt method is based on the implementation of the MINPACK library (https://www.netlib.org/minpack/), whose routines have been translated to the C language.
 
-The source files for iniparser and gnuplot_i are included. The gsl library must be installed. In order to display the plots, the gnuplot program (http://www.gnuplot.info/) must be installed.
+The source files for iniparser and gnuplot_i are included in the `src` folder. The GSL library (https://www.gnu.org/software/gsl/) is required to compile `captas`. In order to display the plots, the gnuplot program (http://www.gnuplot.info/) must be installed.
 
-### Plataform
+### Platform
 
 captas is designed to run on Windows (gcc with msys2 or wsl) and Linux platforms.
 
@@ -82,7 +82,7 @@ Example:
 
 `captas ./examples/Bourdet_1983_1/Bourdet_example_1.ini`
 
-The text below corresponds to the `Bourdet_example_1.ini` file for the fitting of the data presented in Bourdet et al (1983). It is a pressure buildup test, after a constant flow rate period, interpreted with the infinite homogeneous reservoir model with a vertical well, with wellbore with storage and skin factor effects.
+The text below corresponds to the `Bourdet_example_1.ini` file for the fitting of the data presented in Bourdet et al (1983). It is a pressure buildup test, after a constant flow rate period, interpreted with the infinite homogeneous reservoir model with a vertical well, with wellbore storage and skin factor effects.
 
     [Title]
     title  = Bourdet et al (1983) 
@@ -133,16 +133,16 @@ The text below corresponds to the `Bourdet_example_1.ini` file for the fitting o
     plots   = 1;  gnuplot installed
     outfile = examples/Bourdet_1983_1/Bourdet_example_1.out;
 
-If the option plots was activated, after a successful fitting, gnuplot will show the following three windows, with the pressure history, semi-logarithmic and diagnostic plots:
+If the option plots was activated, after a successful fitting, gnuplot will show the following three windows with the pressure history, semi-logarithmic and diagnostic plots:
 
 Pressure history (pressure vs. time)
-![History](https://github.com/capico/captas/blob/main/examples/Bourdet_1983_1/history.png?raw=true)
+![History](/examples/Bourdet_1983_1/history.png)
 
-Semi-logarithmic (presure vs. equivalent time)
-![Semilog](https://github.com/capico/captas/blob/main/examples/Bourdet_1983_1/semilog.png?raw=true)
+Semi-logarithmic (pressure vs. equivalent time)
+![Semilog](/examples/Bourdet_1983_1/semilog.png)
 
-Loglog (presure drop and pressure drop logarithmic derivative vs. elapsed time)
-![Loglog](https://github.com/capico/captas/blob/main/examples/Bourdet_1983_1/loglog.png?raw=true)
+Loglog (pressure drop and pressure drop logarithmic derivative vs. elapsed time)
+![Loglog](/examples/Bourdet_1983_1/loglog.png)
 
 ## References
 
