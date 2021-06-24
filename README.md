@@ -3,12 +3,15 @@
 CAPTAS is a program, with a very simple interface, to fit pressure test data to a mathematical model, using the Levenberg-Marquardt method, as part of a well test interpretation.
 The program is useful to refine the estimates you have made by, for example, graphical methods, and to determine the confidence intervals on the estimated parameter values.
 
-The input file, with .ini extension, contains sections and, within each section, keys (parameters). Each section begins with a sentence enclosed in square brackets, followed by identifiers for the parameters, the equal sign, and the parameter value, which can be a number or a string.
+The input file, with `.ini` extension, contains sections and, within each section, keys (parameters). Each section begins with a sentence enclosed in square brackets, followed by identifiers for the parameters, the equal sign, and the parameter value, which can be a number or a string.
 For example:
 
-[Title]
-title  = Simulated Build Up;
-caseid = BU test 1;
+    [Title]
+    title  = Simulated Build Up;
+    caseid = BU test 1;
+    
+    [Units system]
+    units  = 0; Oilfield unit system
 
 When a semicolon appears after the value of a parameter, the rest of the line is considered as a comment. Lines starting with the `#` character are also considered comments. There is no case difference in the names of sections or parameters.
 The sections and parameters are as follows:
@@ -20,7 +23,11 @@ The sections and parameters are as follows:
   - `testtype`: identifies the type of test, according to the following values: 0 for a test with multiple flow rates, with pressures in more than one flow period (see example Gringarten_1979); 1 for a production test (initial) with constant rate; 2 for a pressure build up test, after a period of production with constant rate (see example Bourdet_1983_1); 3 for an injection test (initial), with constant flow rate; 4 for a falloff test, after a period of constant injection rate; 5 for a period of zero flow rate, preceded by periods with different flow rates; and 6 for a period with positive flow rate, preceded by periods with different flow rates.
   - `pressfile`: is a string with the name of the text file with the pressure vs time data table, including its relative path. Each line of this file contains the time value, separated from the pressure value by spaces or tabs, in the `units` specified in `Units system`.
   - `presssize`: is the number of lines in the file with the pressure data.
-  - `ratefile`: is a string with the name of the file with the flow vs. time data table, including its relative path. Each line of this file contains the time value, separated from the flow rate value by spaces or tabs, in the units specified in `Units system`. For example, the table: 0.0 250.0 12.0 500.0 24.0 0.0 indicates that the well produced with a flow rate of 250.0 between times 0.0 and 12.0, and with a flow rate of 500.0 between times 12.0 and 24.0, after which it was closed. With the exception of the test identified as `testtype` = 0, the pressures in the `pressfile` file must match the last period in the `ratefile` file, which is the period under analysis.
+  - `ratefile`: is a string with the name of the file with the flow vs. time data table, including its relative path. Each line of this file contains the time value, separated from the flow rate value by spaces or tabs, in the units specified in `Units system`. For example, the table:  
+    `0.00 250.0`  
+    `12.0 500.0`  
+    `24.0 000.0`   
+indicates that the well produced with a flow rate of 250.0 between times 0.0 and 12.0, and with a flow rate of 500.0 between times 12.0 and 24.0, after which it was closed. With the exception of the test identified as `testtype` = 0, the pressures in the `pressfile` file must match the last period in the `ratefile` file, which is the period under analysis.
    - `ratesize`: it is the number of lines in the file with the flow rate data.
    - `phi`: porosity
    - `B`: formation volume factor
@@ -53,10 +60,6 @@ This library is distributed under the GNU General Public License, version 3 or l
 
 ## How to compile and run?
 
-To compile use:
-
-gcc capta.c cminpack/covar.c cminpack/enorm.c cminpack/lmder.c cminpack/lmpar.c cminpack/qrfac.c cminpack/qrsolv.c gnuplot_i/gnuplot_i.c iniparser/dictionary.c iniparser/iniparser.c models/dpwf.c models/dpwfc.c models/dpwfcl.c models/dpwfcpob.c models/dpwff.c models/dpwfnfob.c models/dpwfrect.c models/dpwft.c stehfest/stehfest.c utils/utils.c -lm -lgsl -I/usr/include/gsl -lgslcblas -o captas
-
 ### Requirements
 
 The program uses open source libraries: 
@@ -65,11 +68,81 @@ The program uses open source libraries:
  - gls (https://www.gnu.org/software/gsl/), for math functions. 
  - The Levenberg-Marquardt method is based on the implementation of the MINPACK library (https://www.netlib.org/minpack/), whose routines have been translated to the C language.
 
-In order to display the plots, the gnuplot program (http://www.gnuplot.info/) should be installed.
+The source files for iniparser and gnuplot_i are included. The gsl library must be installed. In order to display the plots, the gnuplot program (http://www.gnuplot.info/) must be installed.
 
 ### Plataform
 
-captas is designed to run on Windows (gcc with msys2 and wsl) and Linux platforms.
+captas is designed to run on Windows (gcc with msys2 or wsl) and Linux platforms.
+
+To compile use:
+
+    gcc capta.c cminpack/covar.c cminpack/enorm.c cminpack/lmder.c cminpack/lmpar.c cminpack/qrfac.c cminpack/qrsolv.c gnuplot_i/gnuplot_i.c iniparser/dictionary.c  iniparser/iniparser.c models/dpwf.c models/dpwfc.c models/dpwfcl.c models/dpwfcpob.c models/dpwff.c models/dpwfnfob.c models/dpwfrect.c models/dpwft.c stehfest/stehfest.c utils/utils.c -lm -lgsl -I/usr/include/gsl -lgslcblas -o captas
+
+Example:
+
+`captas ./examples/Bourdet_1983_1/Bourdet_example_1.ini`
+
+The text below corresponds to the `Bourdet_example_1.ini` file for the fitting of the data presented in Bourdet et al (1983). It is a pressure buildup test, after a constant flow rate period, interpreted with the infinite homogeneous reservoir model with a vertical well, with wellbore with storage and skin factor effects.
+
+    [Title]
+    title  = Bourdet et al (1983) 
+    caseid = buildup test example 1;
+    
+    [Units system]
+    units  = 1; ANP unit system
+    
+    [Test description]
+    testtype  = 2; buildup test
+    pressfile = examples/Bourdet_1983_1/Bourdet_example_1_p.dat; [h vs. kgf/cm2]
+    presssize = 106;
+    ratefile  = examples/Bourdet_1983_1/Bourdet_example_1_q.dat; [h vs. m3/d]
+    ratesize  = 2;
+    phi       = 0.25;       porosity
+    B         = 1.06;       formation volume fator
+    mu        = 2.5;        viscosity [cp]
+    h         = 32.6136;    formation thickness [m]
+    rw        = 0.088392;   wellbore radius [m]
+    ct        = 0.00005974;	total compressibility [cm2/kgf]
+    pi        = 272.58;     initial pressure [kgf/cm2]
+    S         = 0.0;        skin factor
+    k         = 100.0;      permeability [md]
+    C         = 0.01;       wellbore storage [m3/kgf/cm2]
+    
+    [Regression parameters]
+    rp_S	= 1;
+    rp_k	= 1;
+    rp_C	= 1;
+    rp_pi	= 1;
+    
+    [Regression parameters derivatives]
+    jac_S	 = 0;   analytical derivatives
+    jac_k	 = 0;
+    jac_C	 = 0;
+    jac_pi = 0;
+    
+    [Regression model]
+    model = 0;    infinite homogeneous reservoir, vertical well with wellbore storage and skin factor
+    
+    [Derivative parameters]
+    Lder	= 0.1;  differentiation interval
+    
+    [Stehfest parameters]
+    nstehfest = 16;
+    
+    [Output]
+    plots   = 1;  gnuplot installed
+    outfile = examples/Bourdet_1983_1/Bourdet_example_1.out;
+
+If the option plots was activated, after a successful fitting, gnuplot will show the following three windows, with the pressure history, semi-logarithmic and diagnostic plots:
+
+Pressure history (pressure vs. time)
+![History](https://github.com/capico/captas/blob/main/examples/Bourdet_1983_1/history.png?raw=true)
+
+Semi-logarithmic (presure vs. equivalent time)
+![Semilog](https://github.com/capico/captas/blob/main/examples/Bourdet_1983_1/semilog.png?raw=true)
+
+Loglog (presure drop and pressure drop logarithmic derivative vs. elapsed time)
+![Loglog](https://github.com/capico/captas/blob/main/examples/Bourdet_1983_1/loglog.png?raw=true)
 
 ## References
 
