@@ -12,6 +12,11 @@
 #include "dpwfcl.h"
 
 /*********************** CHANNEL FLOW - NO WELLBORE STORAGE ******************/
+/* References:
+*
+* R. Nutakki and L. Mattar, Pressure Transient Analysis of Wells in Very Long
+* Narrow Reservoirs,  Society of Petroleum Engineers Paper 11221, 1982
+*/
 
 /**
 * delta pwf (pressure drop per unit constant flow rate) function, for a homo-
@@ -19,38 +24,41 @@
 */
 double dpwfcl(const modelparameters *p, double t)
 {
-	double a, b, rws, z;
-	double epsilon = DBL_EPSILON;
-	double sum = 0.0, delta = 1.0, wn, ws;
-	int j = 0, i = 1, nloop = 0;
+    double a, b, rws, z;
+    double epsilon = DBL_EPSILON;
+    double sum = 0.0, delta = 1.0, wn, ws;
+    int j = 0, i = 1, nloop = 0;
 
-	rws = p->rw * gsl_sf_exp(-p->S);
-	a   = (p->qB * p->mu * p->C2) / (p->h * p->k);
-	b   = (p->phi * p->mu * p->ct * rws * rws) / (4.0*p->k * p->C1 * t);
-	z   = (p->phi * p->mu * p->ct)             / (4.0*p->k * p->C1 * t);
+    rws = p->rw * gsl_sf_exp(-p->S);
+    a   = (p->qB * p->mu * p->C2) / (p->h * p->k);
+    b   = (p->phi * p->mu * p->ct * rws * rws) / (4.0*p->k * p->C1 * t);
+    z   = (p->phi * p->mu * p->ct)             / (4.0*p->k * p->C1 * t);
 
-	gsl_set_error_handler_off();
+    gsl_set_error_handler_off();
 
-	while(fabs(delta) > epsilon){
-		wn = 2.0*(p->w1*i + p->w2*j);
-		ws = 2.0*(p->w1*j + p->w2*i);
+    while(fabs(delta) > epsilon)
+    {
+        wn = 2.0*(p->w1*i + p->w2*j);
+        ws = 2.0*(p->w1*j + p->w2*i);
 
-		delta = gsl_sf_expint_E1(wn*wn*z)
-			  + gsl_sf_expint_E1(ws*ws*z);
+        delta = gsl_sf_expint_E1(wn*wn*z)
+                + gsl_sf_expint_E1(ws*ws*z);
 
-		sum += delta;
+        sum += delta;
 
-		if(nloop%2 == 0){
-			j++;
-		}
-		else{
-			i++;
-		}
+        if(nloop%2 == 0)
+        {
+            j++;
+        }
+        else
+        {
+            i++;
+        }
 
-		nloop++;
-	}
+        nloop++;
+    }
 
-	return a * 0.5 * (gsl_sf_expint_E1(b) + sum);
+    return a * 0.5 * (gsl_sf_expint_E1(b) + sum);
 }
 /*****************************************************************************/
 
@@ -60,43 +68,46 @@ d(dpwf)/dk
 */
 double ddpwfcl_dk(const modelparameters *p, double t)
 {
-	double a, b, rws, z;
-	double epsilon = DBL_EPSILON;
-	double sum = 0.0, delta = 1.0, sum1 = 0.0, delta1 = 1.0, wn, ws;
-	int j = 0, i = 1, nloop = 0;
+    double a, b, rws, z;
+    double epsilon = DBL_EPSILON;
+    double sum = 0.0, delta = 1.0, sum1 = 0.0, delta1 = 1.0, wn, ws;
+    int j = 0, i = 1, nloop = 0;
 
-	rws = p->rw * gsl_sf_exp(-p->S);
-	a   = (p->qB * p->mu * p->C2) / (p->h * p->k);
-	b   = (p->phi * p->mu * p->ct * rws * rws) / (4.0*p->k * p->C1 * t);
-	z   = (p->phi * p->mu * p->ct)             / (4.0*p->k * p->C1 * t);
+    rws = p->rw * gsl_sf_exp(-p->S);
+    a   = (p->qB * p->mu * p->C2) / (p->h * p->k);
+    b   = (p->phi * p->mu * p->ct * rws * rws) / (4.0*p->k * p->C1 * t);
+    z   = (p->phi * p->mu * p->ct)             / (4.0*p->k * p->C1 * t);
 
-	gsl_set_error_handler_off();
+    gsl_set_error_handler_off();
 
-	while( (fabs(delta) > epsilon) && (fabs(delta1) > epsilon) ){
-		wn = 2.0*(p->w1*i + p->w2*j);
-		ws = 2.0*(p->w1*j + p->w2*i);
+    while( (fabs(delta) > epsilon) && (fabs(delta1) > epsilon) )
+    {
+        wn = 2.0*(p->w1*i + p->w2*j);
+        ws = 2.0*(p->w1*j + p->w2*i);
 
-		delta  = gsl_sf_expint_E1(wn*wn*z)
-               + gsl_sf_expint_E1(ws*ws*z);
+        delta  = gsl_sf_expint_E1(wn*wn*z)
+                 + gsl_sf_expint_E1(ws*ws*z);
 
         delta1 = gsl_sf_exp(-wn*wn*z)
-               + gsl_sf_exp(-ws*ws*z);
+                 + gsl_sf_exp(-ws*ws*z);
 
-		sum  += delta;
+        sum  += delta;
 
-		sum1 += delta1;
+        sum1 += delta1;
 
-		if(nloop%2 == 0){
-			j++;
-		}
-		else{
-			i++;
-		}
+        if(nloop%2 == 0)
+        {
+            j++;
+        }
+        else
+        {
+            i++;
+        }
 
-		nloop++;
-	}
+        nloop++;
+    }
 
-	return -(a/p->k) * 0.5 * (gsl_sf_expint_E1(b) + sum - sum1);
+    return -(a/p->k) * 0.5 * (gsl_sf_expint_E1(b) + sum - sum1);
 }
 /*****************************************************************************/
 
@@ -106,13 +117,13 @@ d(dpwf)/dS
 */
 double ddpwfcl_dS(const modelparameters *p, double t)
 {
-	double a, b, rws;
+    double a, b, rws;
 
-	rws = p->rw * gsl_sf_exp(-p->S);
-	a   = (p->qB * p->mu * p->C2) / (p->h * p->k);
-	b   = (p->phi * p->mu * p->ct * rws * rws) / (4.0*p->k * p->C1 * t);
+    rws = p->rw * gsl_sf_exp(-p->S);
+    a   = (p->qB * p->mu * p->C2) / (p->h * p->k);
+    b   = (p->phi * p->mu * p->ct * rws * rws) / (4.0*p->k * p->C1 * t);
 
-	return a * gsl_sf_exp(-b);
+    return a * gsl_sf_exp(-b);
 }
 /*****************************************************************************/
 
@@ -122,36 +133,39 @@ d(dpwf)/dw1
 */
 double ddpwfcl_dw1(const modelparameters *p, double t)
 {
-	double a, z;
-	double epsilon = DBL_EPSILON;
-	double sum = 0.0, delta = 1.0, wn, ws;
-	int j = 0, i = 1, nloop = 0;
+    double a, z;
+    double epsilon = DBL_EPSILON;
+    double sum = 0.0, delta = 1.0, wn, ws;
+    int j = 0, i = 1, nloop = 0;
 
-	a = (p->qB * p->mu * p->C2) / (p->h * p->k);
-	z = (p->phi * p->mu * p->ct) / (4.0*p->k * p->C1 * t);
+    a = (p->qB * p->mu * p->C2) / (p->h * p->k);
+    z = (p->phi * p->mu * p->ct) / (4.0*p->k * p->C1 * t);
 
-	gsl_set_error_handler_off();
+    gsl_set_error_handler_off();
 
-	while(fabs(delta) > epsilon){
-		wn = 2.0*(p->w1*i + p->w2*j);
-		ws = 2.0*(p->w1*j + p->w2*i);
+    while(fabs(delta) > epsilon)
+    {
+        wn = 2.0*(p->w1*i + p->w2*j);
+        ws = 2.0*(p->w1*j + p->w2*i);
 
         delta = (gsl_sf_exp(-wn*wn*z) / wn) * i
-              + (gsl_sf_exp(-ws*ws*z) / ws) * j;
+                + (gsl_sf_exp(-ws*ws*z) / ws) * j;
 
-		sum += delta;
+        sum += delta;
 
-		if(nloop%2 == 0){
-			j++;
-		}
-		else{
-			i++;
-		}
+        if(nloop%2 == 0)
+        {
+            j++;
+        }
+        else
+        {
+            i++;
+        }
 
-		nloop++;
-	}
+        nloop++;
+    }
 
-	return -a * 2.0 * sum;
+    return -a * 2.0 * sum;
 }
 /*****************************************************************************/
 
@@ -161,35 +175,38 @@ d(dpwf)/dw2
 */
 double ddpwfcl_dw2(const modelparameters *p, double t)
 {
-	double a, z;
-	double epsilon = DBL_EPSILON;
-	double sum = 0.0, delta = 1.0, wn, ws;
-	int j = 0, i = 1, nloop = 0;
+    double a, z;
+    double epsilon = DBL_EPSILON;
+    double sum = 0.0, delta = 1.0, wn, ws;
+    int j = 0, i = 1, nloop = 0;
 
-	a = (p->qB * p->mu * p->C2) / (p->h * p->k);
-	z = (p->phi * p->mu * p->ct)                 / (4.0*p->k * p->C1 * t);
+    a = (p->qB * p->mu * p->C2) / (p->h * p->k);
+    z = (p->phi * p->mu * p->ct)                 / (4.0*p->k * p->C1 * t);
 
-	gsl_set_error_handler_off();
+    gsl_set_error_handler_off();
 
-	while(fabs(delta) > epsilon){
-		wn = 2.0*(p->w1*i + p->w2*j);
-		ws = 2.0*(p->w1*j + p->w2*i);
+    while(fabs(delta) > epsilon)
+    {
+        wn = 2.0*(p->w1*i + p->w2*j);
+        ws = 2.0*(p->w1*j + p->w2*i);
 
         delta = (gsl_sf_exp(-wn*wn*z) / wn) * j
-              + (gsl_sf_exp(-ws*ws*z) / ws) * i;
+                + (gsl_sf_exp(-ws*ws*z) / ws) * i;
 
-		sum += delta;
+        sum += delta;
 
-		if(nloop%2 == 0){
-			j++;
-		}
-		else{
-			i++;
-		}
+        if(nloop%2 == 0)
+        {
+            j++;
+        }
+        else
+        {
+            i++;
+        }
 
-		nloop++;
-	}
+        nloop++;
+    }
 
-	return -a * 2.0 * sum;
+    return -a * 2.0 * sum;
 }
 /*****************************************************************************/

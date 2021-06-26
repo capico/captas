@@ -11,6 +11,14 @@
 #include "dpwfc.h"
 
 /****************************** CHANNEL FLOW *********************************/
+/* References:
+*
+* R. Nutakki and L. Mattar, Pressure Transient Analysis of Wells in Very Long
+* Narrow Reservoirs,  Society of Petroleum Engineers Paper 11221, 1982
+*
+* A.F. Van Everdingen and W. Hurst, The Application of the Laplace
+* Transformation to Flow Problems in Reservoirs, SPE-949305-G, 1949
+*/
 
 /**
 * delta pwf (pressure drop per unit constant flow rate) function in the Laplace
@@ -22,15 +30,15 @@ double dpwfcbar(const void *parameters, double u)
 {
     double a, b, CD, rws, z, numer, denom, aux0, aux1, aux2;
     double epsilon = DBL_EPSILON;
-	double sum = 0.0, delta = 1.0, wn, ws;
-	int j = 0, i = 1, nloop = 0;
-	modelparameters *p;
+    double sum = 0.0, delta = 1.0, wn, ws;
+    int j = 0, i = 1, nloop = 0;
+    modelparameters *p;
 
-	p = (modelparameters *)parameters;
+    p = (modelparameters *)parameters;
 
-	gsl_set_error_handler_off();
+    gsl_set_error_handler_off();
 
-	rws = p->rw*exp(-p->S);
+    rws = p->rw*exp(-p->S);
     a   = (p->qB * p->mu * p->C2) / (p->h * p->k);
     b   = (p->phi * p->mu * p->ct * rws * rws) / (p->k * p->C1);
     z   = (p->phi * p->mu * p->ct)             / (p->k * p->C1);
@@ -42,29 +50,32 @@ double dpwfcbar(const void *parameters, double u)
 
     numer = gsl_sf_bessel_K0(aux1);
 
-    while(fabs(delta) > epsilon){
-		wn = 2.0*(p->w1*i + p->w2*j);
-		ws = 2.0*(p->w1*j + p->w2*i);
+    while(fabs(delta) > epsilon)
+    {
+        wn = 2.0*(p->w1*i + p->w2*j);
+        ws = 2.0*(p->w1*j + p->w2*i);
 
-		delta = gsl_sf_bessel_K0(wn * aux2)
-              + gsl_sf_bessel_K0(ws * aux2);
+        delta = gsl_sf_bessel_K0(wn * aux2)
+                + gsl_sf_bessel_K0(ws * aux2);
 
-		sum += delta;
+        sum += delta;
 
-		if(nloop%2 == 0){
-			j++;
-		}
-		else{
-			i++;
-		}
+        if(nloop%2 == 0)
+        {
+            j++;
+        }
+        else
+        {
+            i++;
+        }
 
-		nloop++;
-	}
+        nloop++;
+    }
 
-	//printf("i = %d, j = %d\n", i, j);
+    //printf("i = %d, j = %d\n", i, j);
 
-	numer += sum;
-	numer /= aux0;
+    numer += sum;
+    numer /= aux0;
     denom  = ( 1.0 + CD * aux0 * aux0 * numer );
 
     return (b * a) * (numer / denom);
@@ -79,15 +90,15 @@ double ddpwfc_dkbar(const void *parameters, double u)
 {
     double a, b, CD, rws, z, numer, denom, aux0, aux1, aux2;
     double epsilon = DBL_EPSILON;
-	double sum = 0.0, delta = 1.0, sum1 = 0.0, delta1 = 1.0, wn, ws;
-	int j = 0, i = 1, nloop = 0;
-	modelparameters *p;
+    double sum = 0.0, delta = 1.0, sum1 = 0.0, delta1 = 1.0, wn, ws;
+    int j = 0, i = 1, nloop = 0;
+    modelparameters *p;
 
-	p = (modelparameters *)parameters;
+    p = (modelparameters *)parameters;
 
-	gsl_set_error_handler_off();
+    gsl_set_error_handler_off();
 
-	rws = p->rw*exp(-p->S);
+    rws = p->rw*exp(-p->S);
     a   = (p->qB * p->mu * p->C2) / (p->h * p->k);
     b   = (p->phi * p->mu * p->ct * rws * rws) / (p->k * p->C1);
     z   = (p->phi * p->mu * p->ct)             / (p->k * p->C1);
@@ -98,33 +109,36 @@ double ddpwfc_dkbar(const void *parameters, double u)
     aux2  = sqrt(u * z);
     sum   = gsl_sf_bessel_K0(aux1);
 
-    while( (fabs(delta) > epsilon) && (fabs(delta1) > epsilon) ){
-		wn = 2.0*(p->w1*i + p->w2*j);
-		ws = 2.0*(p->w1*j + p->w2*i);
+    while( (fabs(delta) > epsilon) && (fabs(delta1) > epsilon) )
+    {
+        wn = 2.0*(p->w1*i + p->w2*j);
+        ws = 2.0*(p->w1*j + p->w2*i);
 
-		delta  = gsl_sf_bessel_K0(wn * aux2)
-               + gsl_sf_bessel_K0(ws * aux2);
+        delta  = gsl_sf_bessel_K0(wn * aux2)
+                 + gsl_sf_bessel_K0(ws * aux2);
 
         delta1 = wn * gsl_sf_bessel_K1(wn * aux2)
-               + ws * gsl_sf_bessel_K1(ws * aux2);
+                 + ws * gsl_sf_bessel_K1(ws * aux2);
 
-		sum  += delta;
+        sum  += delta;
 
-		sum1 += delta1;
+        sum1 += delta1;
 
-		if(nloop%2 == 0){
-			j++;
-		}
-		else{
-			i++;
-		}
+        if(nloop%2 == 0)
+        {
+            j++;
+        }
+        else
+        {
+            i++;
+        }
 
-		nloop++;
-	}
+        nloop++;
+    }
 
-	//printf("i = %d, j = %d\n", i, j);
+    //printf("i = %d, j = %d\n", i, j);
 
-	numer  = (a / p->k) * ( aux1*gsl_sf_bessel_K1(aux1) + aux2*sum1 - 2.0*sum );
+    numer  = (a / p->k) * ( aux1*gsl_sf_bessel_K1(aux1) + aux2*sum1 - 2.0*sum );
 
     denom  = ( 1.0 + CD * aux0 * sum );
     denom *= denom;
@@ -142,53 +156,56 @@ double ddpwfc_dCbar(const void *parameters, double u)
 {
     double a, b, c, CD, rws, z, numer, denom, aux0, aux1, aux2, aux3;
     double epsilon = DBL_EPSILON;
-	double sum = 0.0, delta = 1.0, wn, ws;
-	int j = 0, i = 1, nloop = 0;
-	modelparameters *p;
+    double sum = 0.0, delta = 1.0, wn, ws;
+    int j = 0, i = 1, nloop = 0;
+    modelparameters *p;
 
-	p = (modelparameters *)parameters;
+    p = (modelparameters *)parameters;
 
-	gsl_set_error_handler_off();
+    gsl_set_error_handler_off();
 
-	rws = p->rw*exp(-p->S);
+    rws = p->rw*exp(-p->S);
     a   = (p->qB * p->mu * p->C2) / (p->h * p->k);
     b   = (p->phi * p->mu * p->ct * rws * rws) / (p->k * p->C1);
     z   = (p->phi * p->mu * p->ct)             / (p->k * p->C1);
     CD  = (p->C * p->C3) / (p->phi * p->h  * p->ct * rws * rws);
     c   = (p->C3)        / (p->phi * p->h  * p->ct * rws * rws);
 
-    aux0  = u * b;
-    aux1  = sqrt(aux0);
-    aux2  = sqrt(u * z);
+    aux0 = u * b;
+    aux1 = sqrt(aux0);
+    aux2 = sqrt(u * z);
     aux3 = gsl_sf_bessel_K0(aux1);
 
-    while(fabs(delta) > epsilon){
-		wn = 2.0*(p->w1*i + p->w2*j);
-		ws = 2.0*(p->w1*j + p->w2*i);
+    while(fabs(delta) > epsilon)
+    {
+        wn = 2.0*(p->w1*i + p->w2*j);
+        ws = 2.0*(p->w1*j + p->w2*i);
 
-		delta = gsl_sf_bessel_K0(wn * aux2)
-              + gsl_sf_bessel_K0(ws * aux2);
+        delta = gsl_sf_bessel_K0(wn * aux2)
+                + gsl_sf_bessel_K0(ws * aux2);
 
-		sum += delta;
+        sum += delta;
 
-		if(nloop%2 == 0){
-			j++;
-		}
-		else{
-			i++;
-		}
+        if(nloop%2 == 0)
+        {
+            j++;
+        }
+        else
+        {
+            i++;
+        }
 
-		nloop++;
-	}
+        nloop++;
+    }
 
-	numer  = aux3 + sum;
-	numer *= numer;
-	numer *= - a * b * c;
+    numer  = aux3 + sum;
+    numer *= numer;
+    numer *= - a * b * c;
 
-	denom  = 1.0 + aux0 * CD * (aux3 + sum);
-	denom *= denom;
+    denom  = 1.0 + aux0 * CD * (aux3 + sum);
+    denom *= denom;
 
-	return (numer / denom);
+    return (numer / denom);
 }
 /*****************************************************************************/
 
@@ -198,54 +215,57 @@ d(dpwf)/dS function in the Laplace space
 */
 double ddpwfc_dSbar(const void *parameters, double u)
 {
-    double a, b, rws, w, y , z, numer, denom, aux0, aux1, aux2, aux3;
+    double a, b, rws, w, y, z, numer, denom, aux0, aux1, aux2, aux3;
     double epsilon = DBL_EPSILON;
-	double sum = 0.0, delta = 1.0, wn, ws;
-	int j = 0, i = 1, nloop = 0;
-	modelparameters *p;
+    double sum = 0.0, delta = 1.0, wn, ws;
+    int j = 0, i = 1, nloop = 0;
+    modelparameters *p;
 
-	p = (modelparameters *)parameters;
+    p = (modelparameters *)parameters;
 
-	gsl_set_error_handler_off();
+    gsl_set_error_handler_off();
 
-	rws = p->rw*exp(-p->S);
+    rws = p->rw*exp(-p->S);
     a   = (p->qB * p->mu * p->C2) / (p->h * p->k);
     b   = (p->phi * p->mu * p->ct * rws * rws)     / (p->k * p->C1);
     y   = (p->phi * p->mu * p->ct * p->rw * p->rw) / (p->k * p->C1);
     z   = (p->phi * p->mu * p->ct)                 / (p->k * p->C1);
     w   = (p->C * p->C3) / (p->phi * p->h  * p->ct * p->rw * p->rw);
 
-    aux0  = u * b;
-    aux1  = sqrt(aux0);
-    aux2  = sqrt(u * z);
+    aux0 = u * b;
+    aux1 = sqrt(aux0);
+    aux2 = sqrt(u * z);
     aux3 = gsl_sf_bessel_K0(aux1);
 
-    while(fabs(delta) > epsilon){
-		wn = 2.0*(p->w1*i + p->w2*j);
-		ws = 2.0*(p->w1*j + p->w2*i);
+    while(fabs(delta) > epsilon)
+    {
+        wn = 2.0*(p->w1*i + p->w2*j);
+        ws = 2.0*(p->w1*j + p->w2*i);
 
-		delta = gsl_sf_bessel_K0(wn * aux2)
-              + gsl_sf_bessel_K0(ws * aux2);
+        delta = gsl_sf_bessel_K0(wn * aux2)
+                + gsl_sf_bessel_K0(ws * aux2);
 
-		sum += delta;
+        sum += delta;
 
-		if(nloop%2 == 0){
-			j++;
-		}
-		else{
-			i++;
-		}
+        if(nloop%2 == 0)
+        {
+            j++;
+        }
+        else
+        {
+            i++;
+        }
 
-		nloop++;
-	}
+        nloop++;
+    }
 
-	numer  = a * aux1 * gsl_sf_bessel_K1(aux1);
+    numer  = a * aux1 * gsl_sf_bessel_K1(aux1);
 
-	denom  = 1.0 + u * w * y * (aux3 + sum);
-	denom *= denom;
-	denom *= u;
+    denom  = 1.0 + u * w * y * (aux3 + sum);
+    denom *= denom;
+    denom *= u;
 
-	return (numer / denom);
+    return (numer / denom);
 }
 /*****************************************************************************/
 
@@ -258,15 +278,15 @@ double ddpwfc_dw1bar(const void *parameters, double u)
 {
     double a, b, CD, rws, z, numer, denom, aux0, aux1, aux2;
     double epsilon = DBL_EPSILON;
-	double sum = 0.0, sum1 = 0.0, delta = 1.0, delta1 = 1.0, wn, ws;
-	int j = 0, i = 1, nloop = 0;
-	modelparameters *p;
+    double sum = 0.0, sum1 = 0.0, delta = 1.0, delta1 = 1.0, wn, ws;
+    int j = 0, i = 1, nloop = 0;
+    modelparameters *p;
 
-	p = (modelparameters *)parameters;
+    p = (modelparameters *)parameters;
 
-	gsl_set_error_handler_off();
+    gsl_set_error_handler_off();
 
-	rws = p->rw*exp(-p->S);
+    rws = p->rw*exp(-p->S);
     a   = (p->qB * p->mu * p->C2) / (p->h * p->k);
     b   = (p->phi * p->mu * p->ct * rws * rws) / (p->k * p->C1);
     z   = (p->phi * p->mu * p->ct)             / (p->k * p->C1);
@@ -276,37 +296,40 @@ double ddpwfc_dw1bar(const void *parameters, double u)
     aux1  = sqrt(aux0);
     aux2  = sqrt(u*z);
 
-    while( (fabs(delta) > epsilon) && (fabs(delta1) > epsilon) ){
-		wn = 2.0*(p->w1*i + p->w2*j);
-		ws = 2.0*(p->w1*j + p->w2*i);
+    while( (fabs(delta) > epsilon) && (fabs(delta1) > epsilon) )
+    {
+        wn = 2.0*(p->w1*i + p->w2*j);
+        ws = 2.0*(p->w1*j + p->w2*i);
 
-		delta  = gsl_sf_bessel_K0(wn * aux2)
-               + gsl_sf_bessel_K0(ws * aux2);
+        delta  = gsl_sf_bessel_K0(wn * aux2)
+                 + gsl_sf_bessel_K0(ws * aux2);
 
         delta1 = gsl_sf_bessel_K1(wn * aux2) * i
-               + gsl_sf_bessel_K1(ws * aux2) * j;
+                 + gsl_sf_bessel_K1(ws * aux2) * j;
 
-		sum  += delta;
+        sum  += delta;
 
-		sum1 += delta1;
+        sum1 += delta1;
 
-		if(nloop%2 == 0){
-			j++;
-		}
-		else{
-			i++;
-		}
+        if(nloop%2 == 0)
+        {
+            j++;
+        }
+        else
+        {
+            i++;
+        }
 
-		nloop++;
-	}
+        nloop++;
+    }
 
-	//printf("i = %d, j = %d\n", i, j);
+    //printf("i = %d, j = %d\n", i, j);
 
-	numer  = -2.0 * a * aux2 * sum1;
+    numer  = -2.0 * a * aux2 * sum1;
 
-	denom  = 1.0 + aux0 * CD * (gsl_sf_bessel_K0(aux1) + sum);
-	denom *= denom;
-	denom *= u;
+    denom  = 1.0 + aux0 * CD * (gsl_sf_bessel_K0(aux1) + sum);
+    denom *= denom;
+    denom *= u;
 
     return (numer / denom);
 }
@@ -320,15 +343,15 @@ double ddpwfc_dw2bar(const void *parameters, double u)
 {
     double a, b, CD, rws, z, numer, denom, aux0, aux1, aux2;
     double epsilon = DBL_EPSILON;
-	double sum = 0.0, sum1 = 0.0, delta = 1.0, delta1 = 1.0, wn, ws;
-	int j = 0, i = 1, nloop = 0;
-	modelparameters *p;
+    double sum = 0.0, sum1 = 0.0, delta = 1.0, delta1 = 1.0, wn, ws;
+    int j = 0, i = 1, nloop = 0;
+    modelparameters *p;
 
-	p = (modelparameters *)parameters;
+    p = (modelparameters *)parameters;
 
-	gsl_set_error_handler_off();
+    gsl_set_error_handler_off();
 
-	rws = p->rw*exp(-p->S);
+    rws = p->rw*exp(-p->S);
     a   = (p->qB * p->mu * p->C2) / (p->h * p->k);
     b   = (p->phi * p->mu * p->ct * rws * rws) / (p->k * p->C1);
     z   = (p->phi * p->mu * p->ct)             / (p->k * p->C1);
@@ -338,37 +361,40 @@ double ddpwfc_dw2bar(const void *parameters, double u)
     aux1  = sqrt(aux0);
     aux2  = sqrt(u*z);
 
-    while( (fabs(delta) > epsilon) && (fabs(delta1) > epsilon) ){
-		wn = 2.0*(p->w1*i + p->w2*j);
-		ws = 2.0*(p->w1*j + p->w2*i);
+    while( (fabs(delta) > epsilon) && (fabs(delta1) > epsilon) )
+    {
+        wn = 2.0*(p->w1*i + p->w2*j);
+        ws = 2.0*(p->w1*j + p->w2*i);
 
-		delta  = gsl_sf_bessel_K0(wn * aux2)
-               + gsl_sf_bessel_K0(ws * aux2);
+        delta  = gsl_sf_bessel_K0(wn * aux2)
+                 + gsl_sf_bessel_K0(ws * aux2);
 
         delta1 = gsl_sf_bessel_K1(wn * aux2) * j
-               + gsl_sf_bessel_K1(ws * aux2) * i;
+                 + gsl_sf_bessel_K1(ws * aux2) * i;
 
-		sum  += delta;
+        sum  += delta;
 
-		sum1 += delta1;
+        sum1 += delta1;
 
-		if(nloop%2 == 0){
-			j++;
-		}
-		else{
-			i++;
-		}
+        if(nloop%2 == 0)
+        {
+            j++;
+        }
+        else
+        {
+            i++;
+        }
 
-		nloop++;
-	}
+        nloop++;
+    }
 
-	//printf("i = %d, j = %d\n", i, j);
+    //printf("i = %d, j = %d\n", i, j);
 
-	numer  = -2.0 * a * aux2 * sum1;
+    numer  = -2.0 * a * aux2 * sum1;
 
-	denom  = 1.0 + aux0 * CD * (gsl_sf_bessel_K0(aux1) + sum);
-	denom *= denom;
-	denom *= u;
+    denom  = 1.0 + aux0 * CD * (gsl_sf_bessel_K0(aux1) + sum);
+    denom *= denom;
+    denom *= u;
 
     return (numer / denom);
 }
@@ -381,16 +407,18 @@ transform using Stehfest's algorithm
 */
 double dpwfc(const modelparameters *p, double t)
 {
-	double f;
+    double f;
 
-    if(t == 0.0){
+    if(t == 0.0)
+    {
         f = 0.0;
-	}
-	else{
+    }
+    else
+    {
         f = stehfest_ilt(&dpwfcbar, p, p->nstehfest, p->v, t);
-	}
+    }
 
-	return f;
+    return f;
 }
 /*****************************************************************************/
 
@@ -402,16 +430,18 @@ algorithm
 */
 double ddpwfc_dk(const modelparameters *p, double t)
 {
-	double f;
+    double f;
 
-    if(t == 0.0){
+    if(t == 0.0)
+    {
         f = 0.0;
-	}
-	else{
+    }
+    else
+    {
         f = stehfest_ilt(&ddpwfc_dkbar, p, p->nstehfest, p->v, t);
-	}
+    }
 
-	return f;
+    return f;
 }
 /*****************************************************************************/
 
@@ -423,16 +453,18 @@ algorithm
 */
 double ddpwfc_dC(const modelparameters *p, double t)
 {
-	double f;
+    double f;
 
-    if(t == 0.0){
+    if(t == 0.0)
+    {
         f = 0.0;
-	}
-	else{
+    }
+    else
+    {
         f = stehfest_ilt(&ddpwfc_dCbar, p, p->nstehfest, p->v, t);
-	}
+    }
 
-	return f;
+    return f;
 }
 /*****************************************************************************/
 
@@ -444,16 +476,18 @@ algorithm
 */
 double ddpwfc_dS(const modelparameters *p, double t)
 {
-	double f;
+    double f;
 
-    if(t == 0.0){
+    if(t == 0.0)
+    {
         f = 0.0;
-	}
-	else{
+    }
+    else
+    {
         f = stehfest_ilt(&ddpwfc_dSbar, p, p->nstehfest, p->v, t);
-	}
+    }
 
-	return f;
+    return f;
 }
 /*****************************************************************************/
 
@@ -465,16 +499,18 @@ algorithm
 */
 double ddpwfc_dw1(const modelparameters *p, double t)
 {
-	double f;
+    double f;
 
-    if(t == 0.0){
+    if(t == 0.0)
+    {
         f = 0.0;
-	}
-	else{
+    }
+    else
+    {
         f = stehfest_ilt(&ddpwfc_dw1bar, p, p->nstehfest, p->v, t);
-	}
+    }
 
-	return f;
+    return f;
 }
 /*****************************************************************************/
 
@@ -486,15 +522,17 @@ algorithm
 */
 double ddpwfc_dw2(const modelparameters *p, double t)
 {
-	double f;
+    double f;
 
-    if(t == 0.0){
+    if(t == 0.0)
+    {
         f = 0.0;
-	}
-	else{
+    }
+    else
+    {
         f = stehfest_ilt(&ddpwfc_dw2bar, p, p->nstehfest, p->v, t);
-	}
+    }
 
-	return f;
+    return f;
 }
 /*****************************************************************************/

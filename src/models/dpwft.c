@@ -8,8 +8,14 @@
 #include "dpwft.h"
 
 /***************** RADIAL FLOW, TRANSFORMED PARAMETERS ***********************/
+/* References:
+*
+* A. Dastan and R. N. Horne, Robust Well Test Interpretation by Nonlinear
+* Regression with Parameter and Data Transformations, SPE Western Regional
+* Meeting, SPE paper 132467, 2010
+*/
 
-/**
+/*
 minimization over the transformed parameters:
 kt  = ln(k),
 Ct  = ln(C),
@@ -25,7 +31,7 @@ algorithm
 */
 double ddpwft_dk(const modelparameters *p, double t)
 {
-	return p->k * ddpwf_dk(p, t);
+    return p->k * ddpwf_dk(p, t);
 }
 /*****************************************************************************/
 
@@ -37,7 +43,7 @@ algorithm
 */
 double ddpwft_dC(const modelparameters *p, double t)
 {
-	return p->C * ddpwf_dC(p, t);
+    return p->C * ddpwf_dC(p, t);
 }
 /*****************************************************************************/
 
@@ -59,6 +65,6 @@ double ddpwft_dS(const modelparameters *p, double t)
 */
 double drt_dpi(const modelparameters *p, double t)
 {
-	return - ( p->pi );
+    return -( p->pi );
 }
 /*****************************************************************************/

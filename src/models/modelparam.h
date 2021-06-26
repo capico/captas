@@ -30,28 +30,28 @@ typedef struct
 
     /* fluid and reservoir properties */
     double
-        B,	    // formation volume factor
-        qB,
-        phi,    // porosity
-        mu,	    // viscosity
-        ct,     // total compressibility
-        rw,     // wellbore radius
-        h;	    // formation thickness
+    B,	    // formation volume factor
+    qB,
+    phi,    // porosity
+    mu,	    // viscosity
+    ct,     // total compressibility
+    rw,     // wellbore radius
+    h;	    // formation thickness
 
     /* wellbore/reservoir parameters */
     double
-        k,	    // permeability
-        C,	    // wellbore storage
-        S,	    // skin factor
-        pi,     // initial pressure
-        re,     // external radius
-        w1,     // distance to fault 1
-        w2,     // distance to fault 2
-        L,      // distance to the sealing fault
-        w1x,    // distance to fault 1, x direction
-        w2x,    // distance to fault 2, x direction
-        w1y,    // distance to fault 1, y direction
-        w2y;    // distance to fault 2, y direction
+    k,	    // permeability
+    C,	    // wellbore storage
+    S,	    // skin factor
+    pi,     // initial pressure
+    re,     // external radius
+    w1,     // distance to fault 1
+    w2,     // distance to fault 2
+    L,      // distance to the sealing fault
+    w1x,    // distance to fault 1, x direction
+    w2x,    // distance to fault 2, x direction
+    w1y,    // distance to fault 1, y direction
+    w2y;    // distance to fault 2, y direction
 
     /* Stehfest's parameter */
     int nstehfest;
@@ -62,33 +62,33 @@ typedef struct
 
     /* regression parameters */
     int
-        rp_S,
-        rp_k,
-        rp_C,
-        rp_pi,
-        rp_re,
-        rp_L,
-        rp_w1,
-        rp_w2,
-        rp_w1x,
-        rp_w2x,
-        rp_w1y,
-        rp_w2y;
+    rp_S,
+    rp_k,
+    rp_C,
+    rp_pi,
+    rp_re,
+    rp_L,
+    rp_w1,
+    rp_w2,
+    rp_w1x,
+    rp_w2x,
+    rp_w1y,
+    rp_w2y;
 
     /* type of regression parameters derivatives */
     int
-        jac_S,
-        jac_k,
-        jac_C,
-        jac_pi,
-        jac_re,
-        jac_L,
-        jac_w1,
-        jac_w2,
-        jac_w1x,
-        jac_w2x,
-        jac_w1y,
-        jac_w2y;
+    jac_S,
+    jac_k,
+    jac_C,
+    jac_pi,
+    jac_re,
+    jac_L,
+    jac_w1,
+    jac_w2,
+    jac_w1x,
+    jac_w2x,
+    jac_w1y,
+    jac_w2y;
 
     /* regression model */
     int model;
@@ -110,12 +110,12 @@ typedef struct
 
     /* lines in table files */
     int
-        presssize,
-        ratesize;
+    presssize,
+    ratesize;
 
     int
-        m, // data points
-        n; // regressed parameters
+    m, // data points
+    n; // regressed parameters
 
     int *partype;   /* type of parameter (k, S, re, ...)*/
     int *jactype;   /* analytical or numerical derivatives */
