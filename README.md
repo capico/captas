@@ -3,6 +3,34 @@
 **captas** is a program for the interpretation and simulation of pressure tests in wells. The program fits the pressure test data to a mathematical model, using the Levenberg-Marquardt method, as part of a well test interpretation. It is useful to refine the estimates you have made by, for example, graphical methods, and to determine the confidence intervals on the estimated parameter values.
 It contains several analytical solutions and their analytical derivatives and should be relatively easy to include others. In case the analytical derivatives for the Jacobian calculation are not available, it is possible to use numerical derivatives by finite differences.
 
+## License
+
+This library is distributed under the GNU General Public License, version 3 or later (GPLv3+).
+
+## How to compile?
+
+### Requirements
+
+The program uses open source libraries: 
+ - iniparser (http://ndevilla.free.fr/iniparser/), for processing input files; 
+ - gnuplot_i (http://ndevilla.free.fr/gnuplot/), for communicating with the gnuplot graphics program;
+ - gls (https://www.gnu.org/software/gsl/), for math functions. 
+ - The Levenberg-Marquardt method is based on the implementation of the MINPACK library (https://www.netlib.org/minpack/), whose routines have been translated to the C language.
+
+The source files for iniparser and gnuplot_i are included in the `src` folder. The GSL library (https://www.gnu.org/software/gsl/) is required to compile `captas`. In order to display the plots, the gnuplot program (http://www.gnuplot.info/) must be installed.
+
+### Platform
+
+captas is designed to run on Windows (gcc with msys2 or wsl) and Linux platforms.
+
+To compile use:
+
+    gcc capta.c cminpack/covar.c cminpack/enorm.c cminpack/lmder.c cminpack/lmpar.c cminpack/qrfac.c cminpack/qrsolv.c gnuplot_i/gnuplot_i.c iniparser/dictionary.c  iniparser/iniparser.c models/dpwf.c models/dpwfc.c models/dpwfcl.c models/dpwfcpob.c models/dpwff.c models/dpwfnfob.c models/dpwfrect.c models/dpwft.c stehfest/stehfest.c utils/utils.c -lm -lgsl -I/usr/include/gsl -lgslcblas -o captas
+
+## How to run?
+
+### Input File
+
 The input file, with `.ini` extension, contains sections and, within each section, keys (parameters). Each section begins with a sentence enclosed in square brackets, followed by identifiers for the parameters, the equal sign, and the parameter value, which can be a number or a string.
 For example:
 
@@ -54,31 +82,9 @@ indicates that the well produced with a flow rate of 250.0 between times 0.0 and
  - `Stehfest parameters`: in this section the `nstehfest` parameter is the number of terms in the Stehfest method, used in the numerical inversion of solutions in Laplace space. Allowed values are even numbers between 4 and 20, with 12 being the default.
  - `Output`: this section specifies the output text file, including its relative path, in the `outfile` parameter. When gnuplot is available, the non-zero `plots` parameter causes graphs to be shown with the data and the solution. For all types of tests a Cartesian graph of pressure vs. time is shown. For tests that fit only one flow period (`Test description:testtype` different from zero), a semi-logarithmic plot of pressure vs. the equivalent time and a graph of the pressure drop and its logarithmic derivative with relation to the equivalent time vs. the elapsed time are shown. The pressure drop is defined as deltap = sign*(p0 – p(t)), with sign = -1 for injection and pressure buildup tests and sign = 1 for the others. p0 is the pressure at the beginning of the period under analysis, that is, p0 = p(dt = 0). When the pressure at the beginning of the test is not found in the first line of the `pressfile` file, it is replaced by whatever value is in place.
 
-## License
+### Example:
 
-This library is distributed under the GNU General Public License, version 3 or later (GPLv3+).
-
-## How to compile and run?
-
-### Requirements
-
-The program uses open source libraries: 
- - iniparser (http://ndevilla.free.fr/iniparser/), for processing input files; 
- - gnuplot_i (http://ndevilla.free.fr/gnuplot/), for communicating with the gnuplot graphics program;
- - gls (https://www.gnu.org/software/gsl/), for math functions. 
- - The Levenberg-Marquardt method is based on the implementation of the MINPACK library (https://www.netlib.org/minpack/), whose routines have been translated to the C language.
-
-The source files for iniparser and gnuplot_i are included in the `src` folder. The GSL library (https://www.gnu.org/software/gsl/) is required to compile `captas`. In order to display the plots, the gnuplot program (http://www.gnuplot.info/) must be installed.
-
-### Platform
-
-captas is designed to run on Windows (gcc with msys2 or wsl) and Linux platforms.
-
-To compile use:
-
-    gcc capta.c cminpack/covar.c cminpack/enorm.c cminpack/lmder.c cminpack/lmpar.c cminpack/qrfac.c cminpack/qrsolv.c gnuplot_i/gnuplot_i.c iniparser/dictionary.c  iniparser/iniparser.c models/dpwf.c models/dpwfc.c models/dpwfcl.c models/dpwfcpob.c models/dpwff.c models/dpwfnfob.c models/dpwfrect.c models/dpwft.c stehfest/stehfest.c utils/utils.c -lm -lgsl -I/usr/include/gsl -lgslcblas -o captas
-
-Example:
+To run the example, type in the command line: 
 
 `captas ./examples/Bourdet_1983_1/Bourdet_example_1.ini`
 
