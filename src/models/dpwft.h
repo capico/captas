@@ -2,6 +2,7 @@
 #define DPWFT_H
 
 #include "modelparam.h"
+#include "dpwf.h"
 
 double ddpwft_dk(const modelparameters *p, double t);
 

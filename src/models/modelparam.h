@@ -1,10 +1,10 @@
 #ifndef MODELPARAM_H
 #define MODELPARAM_H
 
-#define LENGTHFN	64	// file name length
+#define LENGTHFN    64  // file name length
 
-#define NMODELS     8   // number of wellbore/reservoir models
-#define NPARAMETERS 12  // total number of parameters
+#define NMODELS     11  // number of wellbore/reservoir models
+#define NPARAMETERS 14  // total number of parameters
 
 typedef struct
 {
@@ -30,19 +30,19 @@ typedef struct
 
     /* fluid and reservoir properties */
     double
-    B,	    // formation volume factor
+    B,      // formation volume factor
     qB,
     phi,    // porosity
-    mu,	    // viscosity
+    mu,     // viscosity
     ct,     // total compressibility
     rw,     // wellbore radius
-    h;	    // formation thickness
+    h;      // formation thickness
 
     /* wellbore/reservoir parameters */
     double
-    k,	    // permeability
-    C,	    // wellbore storage
-    S,	    // skin factor
+    k,      // permeability
+    C,      // wellbore storage
+    S,      // skin factor
     pi,     // initial pressure
     re,     // external radius
     w1,     // distance to fault 1
@@ -51,7 +51,9 @@ typedef struct
     w1x,    // distance to fault 1, x direction
     w2x,    // distance to fault 2, x direction
     w1y,    // distance to fault 1, y direction
-    w2y;    // distance to fault 2, y direction
+    w2y,    // distance to fault 2, y direction
+    omega,  // storativity ratio
+    lambda; // interporosity flow coefficient
 
     /* Stehfest's parameter */
     int nstehfest;
@@ -73,7 +75,9 @@ typedef struct
     rp_w1x,
     rp_w2x,
     rp_w1y,
-    rp_w2y;
+    rp_w2y,
+    rp_omega,
+    rp_lambda;
 
     /* type of regression parameters derivatives */
     int
@@ -88,7 +92,9 @@ typedef struct
     jac_w1x,
     jac_w2x,
     jac_w1y,
-    jac_w2y;
+    jac_w2y,
+    jac_omega,
+    jac_lambda;
 
     /* regression model */
     int model;
@@ -98,6 +104,9 @@ typedef struct
 
     /* dpwf functions */
     double (*dpwffcn[NMODELS])();
+
+    /* interporosity flow functions for double porosity */
+    double (*f[NMODELS])();
 
     /* dpwf partial derivatives */
     double (*dr_dx[NMODELS][NPARAMETERS])();

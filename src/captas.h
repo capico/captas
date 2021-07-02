@@ -22,11 +22,11 @@
 #define ANP          1
 
 /* reservoir/well-bore parameters for regression */
-#define PERMEABILITY		            0
-#define SKIN_FACTOR			            1
-#define WELLBORE_STORAGE	            2
-#define INITIAL_PRESSURE	            3
-#define EXTERNAL_RADIUS		            4
+#define PERMEABILITY                    0
+#define SKIN_FACTOR                     1
+#define WELLBORE_STORAGE                2
+#define INITIAL_PRESSURE                3
+#define EXTERNAL_RADIUS                 4
 #define DISTANCE_TO_FAULT               5
 #define DISTANCE_TO_FAULT_1             6
 #define DISTANCE_TO_FAULT_2             7
@@ -34,6 +34,8 @@
 #define DISTANCE_TO_FAULT_2_X           9
 #define DISTANCE_TO_FAULT_1_Y           10
 #define DISTANCE_TO_FAULT_2_Y           11
+#define OMEGA                           12
+#define LAMBDA                          13
 
 
 /* reservoir/well-bore models */
@@ -45,6 +47,10 @@
 #define PWFC        5
 #define PWFCL       6
 #define PWFRECT     7
+#define PWFDPPSS    8
+#define PWFDPTSL    9
+#define PWFDPTSP    10
+
 
 /* test type */
 #define MULTIRATE			0

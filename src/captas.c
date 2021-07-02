@@ -465,6 +465,8 @@ void read_inifile(modelparameters *par)
 	par->w2x = iniparser_getdouble(ini, "Test description:w2x",  0);
 	par->w1y = iniparser_getdouble(ini, "Test description:w1y",  0);
 	par->w2y = iniparser_getdouble(ini, "Test description:w2y",  0);
+	par->omega  = iniparser_getdouble(ini, "Test description:omega",  0);
+	par->lambda = iniparser_getdouble(ini, "Test description:lambda", 0);
 
 	str = iniparser_getstring(ini, "Test description:pressfile", NULL);
 	strcpy(par->pressfile, str);
@@ -498,6 +500,10 @@ void read_inifile(modelparameters *par)
 		"Regression parameters:rp_w1y", 0);
 	par->rp_w2y = iniparser_getboolean(ini,
 		"Regression parameters:rp_w2y", 0);
+    par->rp_omega  = iniparser_getboolean(ini,
+		"Regression parameters:rp_omega", 0);
+    par->rp_lambda = iniparser_getboolean(ini,
+		"Regression parameters:rp_lambda", 0);
 
 	par->jac_S   = iniparser_getint(ini,
 		"Regression parameters derivatives:jac_S",  2);
@@ -523,6 +529,10 @@ void read_inifile(modelparameters *par)
 		"Regression parameters derivatives:jac_w1y",2);
 	par->jac_w2y = iniparser_getint(ini,
 		"Regression parameters derivatives:jac_w2y",2);
+    par->jac_omega  = iniparser_getint(ini,
+		"Regression parameters derivatives:jac_omega", 2);
+    par->jac_lambda = iniparser_getint(ini,
+		"Regression parameters derivatives:jac_lambda",2);
 
 	str = iniparser_getstring(ini, "Output:outfile", NULL);
 	strcpy(par->outfile, str);
@@ -565,7 +575,9 @@ void set_parameters(modelparameters *par)
 		par->rp_w1x +
 		par->rp_w2x +
 		par->rp_w1y +
-		par->rp_w2y;
+		par->rp_w2y +
+		par->rp_omega +
+		par->rp_lambda;
 
 	if(par->nstehfest < 4 ||
 		par->nstehfest > 20 ||
@@ -648,6 +660,16 @@ void set_parameters(modelparameters *par)
 		par->jactype[i] = par->jac_w2y;
 		i++;
 	}
+    if(par->rp_omega  == 1){
+		par->partype[i] = OMEGA;
+		par->jactype[i] = par->jac_omega;
+		i++;
+	}
+    if(par->rp_lambda == 1){
+		par->partype[i] = LAMBDA;
+		par->jactype[i] = par->jac_lambda;
+		i++;
+	}
 
 	/******************** pointers to delta_pwf functions ********************/
 	par->dpwffcn[PWF]                       = dpwf;
@@ -658,6 +680,14 @@ void set_parameters(modelparameters *par)
 	par->dpwffcn[PWFC]                      = dpwfc;
 	par->dpwffcn[PWFCL]                     = dpwfcl;
 	par->dpwffcn[PWFRECT]                   = dpwfrect;
+	par->dpwffcn[PWFDPPSS]                  = dpwfdppss;
+	par->dpwffcn[PWFDPTSL]                  = dpwfdptsl;
+	par->dpwffcn[PWFDPTSP]                  = dpwfdptsp;
+
+    /*************** pointers to interporosity flow functions ****************/
+    par->f[PWFDPPSS]                  = fpss;
+	par->f[PWFDPTSL]                  = ftsl;
+	par->f[PWFDPTSP]                  = ftsp;
 
 	/********* pointers to the derivatives of the delta_pwf functions ********/
 	for(i = 0; i <  NMODELS; i++){
@@ -689,12 +719,18 @@ void set_parameters(modelparameters *par)
 	par->dr_dx[PWFCL][DISTANCE_TO_FAULT_1] = ddpwfcl_dw1;
 	par->dr_dx[PWFCL][DISTANCE_TO_FAULT_2] = ddpwfcl_dw2;
 
-	par->dr_dx[PWFCPOB][WELLBORE_STORAGE]  =  ddpwfcpob_dC;
+	par->dr_dx[PWFCPOB][WELLBORE_STORAGE]  = ddpwfcpob_dC;
 
-    par->dr_dx[PWFNFOB][PERMEABILITY]      =  ddpwfnfob_dk;
-	par->dr_dx[PWFNFOB][WELLBORE_STORAGE]  =  ddpwfnfob_dC;
-	par->dr_dx[PWFNFOB][SKIN_FACTOR]       =  ddpwfnfob_dS;
-	par->dr_dx[PWFNFOB][EXTERNAL_RADIUS]   =  ddpwfnfob_dre;
+    par->dr_dx[PWFNFOB][PERMEABILITY]      = ddpwfnfob_dk;
+	par->dr_dx[PWFNFOB][WELLBORE_STORAGE]  = ddpwfnfob_dC;
+	par->dr_dx[PWFNFOB][SKIN_FACTOR]       = ddpwfnfob_dS;
+	par->dr_dx[PWFNFOB][EXTERNAL_RADIUS]   = ddpwfnfob_dre;
+
+	par->dr_dx[PWFDPPSS][WELLBORE_STORAGE] = ddpwfdppss_dC;
+
+	par->dr_dx[PWFDPTSL][WELLBORE_STORAGE] = ddpwfdptsl_dC;
+
+	par->dr_dx[PWFDPTSP][WELLBORE_STORAGE] = ddpwfdptsp_dC;
 
 	par->dr_dx[PWF][INITIAL_PRESSURE]      =
 	par->dr_dx[PWFNFOB][INITIAL_PRESSURE]  =
@@ -702,7 +738,10 @@ void set_parameters(modelparameters *par)
 	par->dr_dx[PWFF][INITIAL_PRESSURE]     =
 	par->dr_dx[PWFC][INITIAL_PRESSURE]     =
 	par->dr_dx[PWFCL][INITIAL_PRESSURE]    =
-	par->dr_dx[PWFRECT][INITIAL_PRESSURE]  = dr_dpi;
+	par->dr_dx[PWFRECT][INITIAL_PRESSURE]  =
+	par->dr_dx[PWFDPPSS][INITIAL_PRESSURE] =
+	par->dr_dx[PWFDPTSL][INITIAL_PRESSURE] =
+	par->dr_dx[PWFDPTSP][INITIAL_PRESSURE] = dr_dpi;
 
 	par->dr_dx[PWFT][INITIAL_PRESSURE]     = drt_dpi;
 	/*************************************************************************/
@@ -1104,6 +1143,12 @@ void setxtomodel(double *x, int n, modelparameters *par)
 		case DISTANCE_TO_FAULT_2_Y:
 			x[i] = par->w2y;
 			break;
+        case OMEGA:
+			x[i] = par->omega;
+			break;
+        case LAMBDA:
+			x[i] = par->lambda;
+			break;
 		default:
 			break;
 		}
@@ -1169,6 +1214,12 @@ void setmodeltox(double *x, int n, modelparameters *par)
 			break;
 		case DISTANCE_TO_FAULT_2_Y:
 			par->w2y = x[i];
+			break;
+        case OMEGA:
+			par->omega  = x[i];
+			break;
+        case LAMBDA:
+			par->lambda = x[i];
 			break;
 		default:
 			break;
@@ -1339,6 +1390,14 @@ void print_par(FILE *file, double *x, double *ci, double **corr, int n,
 			break;
 		case DISTANCE_TO_FAULT_2_Y:
 			fprintf(file, "w2y     = % 12g +/- %12g ", x[i], ci[i]);
+			fprintf(file, x[i] == 0.0 ? "\n" : "or +/- %4g%%\n" , ci[i]*100.0/fabs(x[i]));
+			break;
+        case OMEGA:
+			fprintf(file, "omega   = % 12g +/- %12g ", x[i], ci[i]);
+			fprintf(file, x[i] == 0.0 ? "\n" : "or +/- %4g%%\n" , ci[i]*100.0/fabs(x[i]));
+			break;
+        case LAMBDA:
+			fprintf(file, "lambda  = % 12g +/- %12g ", x[i], ci[i]);
 			fprintf(file, x[i] == 0.0 ? "\n" : "or +/- %4g%%\n" , ci[i]*100.0/fabs(x[i]));
 			break;
 		default:
@@ -1550,7 +1609,7 @@ void write_outfile(modelparameters *par, lmdatatype *data, double *x,
     print_par(outfile, x, ci, corr, n, par);
 
     fprintf(outfile, "Model (t, p, dt, dte, dp, derlog): \n");
-    for (j = 1; j < m; j++){
+    for (j = 0; j < m; j++){
             fprintf(outfile, "%12g %12g %12g %12g %12g %12g \n",
                     data->t[j],
                     data->p[j],

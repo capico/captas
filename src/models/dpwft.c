@@ -4,7 +4,6 @@
 #include <math.h>
 #include <malloc.h>
 
-#include "dpwf.h"
 #include "dpwft.h"
 
 /***************** RADIAL FLOW, TRANSFORMED PARAMETERS ***********************/
