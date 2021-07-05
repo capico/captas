@@ -3,8 +3,8 @@
 
 #define LENGTHFN    64  // file name length
 
-#define NMODELS     11  // number of wellbore/reservoir models
-#define NPARAMETERS 14  // total number of parameters
+#define NMODELS     12  // number of wellbore/reservoir models
+#define NPARAMETERS 15  // total number of parameters
 
 typedef struct
 {
@@ -53,7 +53,8 @@ typedef struct
     w1y,    // distance to fault 1, y direction
     w2y,    // distance to fault 2, y direction
     omega,  // storativity ratio
-    lambda; // interporosity flow coefficient
+    lambda, // interporosity flow coefficient
+    xf;     // fracture half length
 
     /* Stehfest's parameter */
     int nstehfest;
@@ -77,7 +78,8 @@ typedef struct
     rp_w1y,
     rp_w2y,
     rp_omega,
-    rp_lambda;
+    rp_lambda,
+    rp_xf;
 
     /* type of regression parameters derivatives */
     int
@@ -94,7 +96,8 @@ typedef struct
     jac_w1y,
     jac_w2y,
     jac_omega,
-    jac_lambda;
+    jac_lambda,
+    jac_xf;
 
     /* regression model */
     int model;

@@ -465,6 +465,7 @@ void read_inifile(modelparameters *par)
 	par->w2x = iniparser_getdouble(ini, "Test description:w2x",  0);
 	par->w1y = iniparser_getdouble(ini, "Test description:w1y",  0);
 	par->w2y = iniparser_getdouble(ini, "Test description:w2y",  0);
+	par->xf  = iniparser_getdouble(ini, "Test description:xf",   0);
 	par->omega  = iniparser_getdouble(ini, "Test description:omega",  0);
 	par->lambda = iniparser_getdouble(ini, "Test description:lambda", 0);
 
@@ -500,6 +501,8 @@ void read_inifile(modelparameters *par)
 		"Regression parameters:rp_w1y", 0);
 	par->rp_w2y = iniparser_getboolean(ini,
 		"Regression parameters:rp_w2y", 0);
+    par->rp_xf  = iniparser_getboolean(ini,
+		"Regression parameters:rp_xf",  0);
     par->rp_omega  = iniparser_getboolean(ini,
 		"Regression parameters:rp_omega", 0);
     par->rp_lambda = iniparser_getboolean(ini,
@@ -529,6 +532,8 @@ void read_inifile(modelparameters *par)
 		"Regression parameters derivatives:jac_w1y",2);
 	par->jac_w2y = iniparser_getint(ini,
 		"Regression parameters derivatives:jac_w2y",2);
+    par->jac_xf  = iniparser_getint(ini,
+		"Regression parameters derivatives:jac_xf", 2);
     par->jac_omega  = iniparser_getint(ini,
 		"Regression parameters derivatives:jac_omega", 2);
     par->jac_lambda = iniparser_getint(ini,
@@ -576,6 +581,7 @@ void set_parameters(modelparameters *par)
 		par->rp_w2x +
 		par->rp_w1y +
 		par->rp_w2y +
+		par->rp_xf +
 		par->rp_omega +
 		par->rp_lambda;
 
@@ -660,6 +666,11 @@ void set_parameters(modelparameters *par)
 		par->jactype[i] = par->jac_w2y;
 		i++;
 	}
+	if(par->rp_xf  == 1){
+		par->partype[i] = FRACTURE_HALF_LENGTH;
+		par->jactype[i] = par->jac_xf;
+		i++;
+	}
     if(par->rp_omega  == 1){
 		par->partype[i] = OMEGA;
 		par->jactype[i] = par->jac_omega;
@@ -683,6 +694,7 @@ void set_parameters(modelparameters *par)
 	par->dpwffcn[PWFDPPSS]                  = dpwfdppss;
 	par->dpwffcn[PWFDPTSL]                  = dpwfdptsl;
 	par->dpwffcn[PWFDPTSP]                  = dpwfdptsp;
+	par->dpwffcn[PWFICF]                    = dpwficf;
 
     /*************** pointers to interporosity flow functions ****************/
     par->f[PWFDPPSS]                  = fpss;
@@ -732,6 +744,8 @@ void set_parameters(modelparameters *par)
 
 	par->dr_dx[PWFDPTSP][WELLBORE_STORAGE] = ddpwfdptsp_dC;
 
+	par->dr_dx[PWFICF][WELLBORE_STORAGE]   = ddpwficf_dC;
+
 	par->dr_dx[PWF][INITIAL_PRESSURE]      =
 	par->dr_dx[PWFNFOB][INITIAL_PRESSURE]  =
 	par->dr_dx[PWFCPOB][INITIAL_PRESSURE]  =
@@ -741,7 +755,8 @@ void set_parameters(modelparameters *par)
 	par->dr_dx[PWFRECT][INITIAL_PRESSURE]  =
 	par->dr_dx[PWFDPPSS][INITIAL_PRESSURE] =
 	par->dr_dx[PWFDPTSL][INITIAL_PRESSURE] =
-	par->dr_dx[PWFDPTSP][INITIAL_PRESSURE] = dr_dpi;
+	par->dr_dx[PWFDPTSP][INITIAL_PRESSURE] =
+	par->dr_dx[PWFICF][INITIAL_PRESSURE]   = dr_dpi;
 
 	par->dr_dx[PWFT][INITIAL_PRESSURE]     = drt_dpi;
 	/*************************************************************************/
@@ -1149,6 +1164,8 @@ void setxtomodel(double *x, int n, modelparameters *par)
         case LAMBDA:
 			x[i] = par->lambda;
 			break;
+        case FRACTURE_HALF_LENGTH:
+			x[i] = par->xf;
 		default:
 			break;
 		}
@@ -1220,6 +1237,9 @@ void setmodeltox(double *x, int n, modelparameters *par)
 			break;
         case LAMBDA:
 			par->lambda = x[i];
+			break;
+        case FRACTURE_HALF_LENGTH:
+			par->xf     = x[i];
 			break;
 		default:
 			break;
@@ -1398,6 +1418,10 @@ void print_par(FILE *file, double *x, double *ci, double **corr, int n,
 			break;
         case LAMBDA:
 			fprintf(file, "lambda  = % 12g +/- %12g ", x[i], ci[i]);
+			fprintf(file, x[i] == 0.0 ? "\n" : "or +/- %4g%%\n" , ci[i]*100.0/fabs(x[i]));
+			break;
+        case FRACTURE_HALF_LENGTH:
+			fprintf(file, "xf      = % 12g +/- %12g ", x[i], ci[i]);
 			fprintf(file, x[i] == 0.0 ? "\n" : "or +/- %4g%%\n" , ci[i]*100.0/fabs(x[i]));
 			break;
 		default:

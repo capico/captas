@@ -14,6 +14,7 @@ dpwfrect     for homogeneous rectangular reservoir (S, C)
 dpwfdppss    for double porosity infinite reservoir (S, C) PSS interporosity flow
 dpwfdptsl    for double porosity infinite reservoir (S, C) transient interporosity flow, slabs
 dpwfdptsp    for double porosity infinite reservoir (S, C) transient interporosity flow, spheres
+dpwficf      for homogeneous infinite reservoir (S, C) infinite conductivity fractured well
 */
 
 #include "dpwf.h"
@@ -27,5 +28,6 @@ dpwfdptsp    for double porosity infinite reservoir (S, C) transient interporosi
 #include "dpwfdppss.h"
 #include "dpwfdptsl.h"
 #include "dpwfdptsp.h"
+#include "dpwficf.h"
 
 #endif

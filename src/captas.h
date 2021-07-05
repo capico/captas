@@ -36,6 +36,7 @@
 #define DISTANCE_TO_FAULT_2_Y           11
 #define OMEGA                           12
 #define LAMBDA                          13
+#define FRACTURE_HALF_LENGTH            14
 
 
 /* reservoir/well-bore models */
@@ -50,6 +51,7 @@
 #define PWFDPPSS    8
 #define PWFDPTSL    9
 #define PWFDPTSP    10
+#define PWFICF      11
 
 
 /* test type */

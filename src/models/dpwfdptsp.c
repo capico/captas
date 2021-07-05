@@ -18,7 +18,7 @@
 
 
 /**
-* interporosity flow function for spheres
+* transient interporosity flow function for spheres
 */
 double ftsp(const double uD, const double omega, const double lambdas)
 {

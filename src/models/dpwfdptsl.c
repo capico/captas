@@ -18,7 +18,7 @@
 
 
 /**
-* interporosity flow function for slabs
+* transient interporosity flow function for slabs
 */
 double ftsl(const double uD, const double omega, const double lambdas)
 {
