@@ -37,6 +37,7 @@
 #define OMEGA                           12
 #define LAMBDA                          13
 #define FRACTURE_HALF_LENGTH            14
+#define FRACTURE_CONDUCTIVITY           15
 
 
 /* reservoir/well-bore models */
@@ -52,6 +53,7 @@
 #define PWFDPTSL    9
 #define PWFDPTSP    10
 #define PWFICF      11
+#define PWFFCF      12
 
 
 /* test type */

@@ -8,18 +8,20 @@
 #include <gsl/gsl_integration.h>
 #include "../stehfest/stehfest.h"
 
-#include "dpwficf.h"
+#include "dpwffcf.h"
 
-/************ INFINITE RESERVOIR INFINITE CONDUCTIVITY FRACTURE **************/
+/************** INFINITE RESERVOIR FINITE CONDUCTIVITY FRACTURE **************/
 /* References:
 *
-* E. Ozkan and R. Raghavan, New Solutions for Well-Test Analysis Problems:
-* Part 1 - Analytical Considerations (SPE-18615-PA) & Part 2- Computational
-* Considerations and Applications (SPE-18616-PA), 1991.
+* Lee, S. T. and Brockenbrough, I.R., A new Approximate Analytic Solution for
+* Finite Conductivity Vertical Fractures, SPE-12013-PA (1986)
+*
+* T.A. Blasingame and B.D. Poe, Semianalytic Solutions for a Well With a Single
+* Finite-Conductivity Vertical Fracture, SPE-26424-MS, 1993
 */
 
 
-double integrand(double x, void * p)
+double integrand_inf(double x, void * p)
 {
     return gsl_sf_bessel_K0(x) + log(x);
 }
@@ -27,15 +29,17 @@ double integrand(double x, void * p)
 
 /**
 * delta pwf (pressure drop per unit constant flow rate) function in the Laplace
-* space, for an infinite conductivity fractured well in an infinite homogeneous
-* reservoir with skin factor and wellbore storage effects.
+* space, for an finite conductivity fractured well in an infinite homogeneous
+* reservoir with skin factor and wellbore storage effects. "desuperposition" of
+* the trilinear model plus the infinite conductivity model.
 */
-double dpwficfbar(const void *parameters, double u)
+double dpwffcfbar(const void *parameters, double u)
 {
-    double a, b, f, xfs, uD, CD, xD, integral_1, integral_2, lim_1, lim_2;
+    double a, b, f, uD, CD, xD, integral_1, integral_2, lim_1, lim_2;
+    double CfD, CfD_inf, psi, psi_inf;
     double
-        epsabs =  1.0e-12, // absolute error limit
-        epsrel = 1.0e-8;   // relative error limit
+        epsabs = 1.0e-12, // absolute error limit
+        epsrel = 1.0e-8;  // relative error limit
     double abserr; // estimate of the absolute error
     size_t neval;  // number of function evaluations
     gsl_function F;
@@ -45,12 +49,21 @@ double dpwficfbar(const void *parameters, double u)
 
     gsl_set_error_handler_off();
 
-    xD  = 0.732; // for infinite conductivity behavior
-
     a   = (p->qB * p->mu * p->C2)/ (p->h * p->k);
     b   = (p->phi * p->mu * p->ct * p->xf * p->xf) / (p->k * p->C1);
     CD  = (p->C * p->C3) / (p->phi * p->h  * p->ct * p->xf * p->xf);
     uD  = u * b;
+
+	CfD     = p->fc / (p->k * p->xf);
+	CfD_inf = M_PI * 1.0e6;
+
+	psi     = sqrt( 2.0 * (uD + sqrt(uD))/CfD     );
+	psi_inf = sqrt( 2.0 * (uD + sqrt(uD))/CfD_inf );
+
+	f  = (M_PI / uD );
+	f *= (1.0 / (CfD*psi*tanh(psi)) - 1.0 / (CfD_inf*psi_inf*tanh(psi_inf)));
+
+    xD  = 0.732; // for infinite conductivity behavior
 
     lim_1 = sqrt(uD) * (1.0 - xD);
     lim_2 = sqrt(uD) * (1.0 + xD);
@@ -61,7 +74,7 @@ double dpwficfbar(const void *parameters, double u)
     // to avoid the singularity at zero, the original integrand is written as
     // K0(x) = (K0(x) + log(x)) - log(x). the second part is analytically
     // integrated.
-    F.function = &integrand;
+    F.function = &integrand_inf;
 
     gsl_integration_qng(&F, 0.0, lim_1, epsabs, epsrel, &integral_1, &abserr, &neval);
     gsl_integration_qng(&F, 0.0, lim_2, epsabs, epsrel, &integral_2, &abserr, &neval);
@@ -72,7 +85,7 @@ double dpwficfbar(const void *parameters, double u)
     integral_1 += sqrt(uD) * (1.0 - xD) * ( 1.0 - log( sqrt(uD)*(1.0 - xD) ) );
     integral_2 += sqrt(uD) * (1.0 + xD) * ( 1.0 - log( sqrt(uD)*(1.0 + xD) ) );
 
-    f = (integral_1 + integral_2) / (2.0 * uD * sqrt(uD))  + p->S/uD;
+    f += (integral_1 + integral_2) / (2.0 * uD * sqrt(uD)) + p->S/uD;
 
     return a * b * f / (1.0 + CD*uD*uD*f);
 }
@@ -82,7 +95,7 @@ double dpwficfbar(const void *parameters, double u)
 /**
 d(dpwf)/dC function in the Laplace space
 */
-double ddpwficf_dCbar(const void *parameters, double u)
+double ddpwffcf_dCbar(const void *parameters, double u)
 {
     double bc_a, dpwfb;
     modelparameters *p;
@@ -93,7 +106,7 @@ double ddpwficf_dCbar(const void *parameters, double u)
 
     bc_a  = (p->C3) / (p->C1 * p->C2 * p->qB);
 
-    dpwfb = dpwficfbar(p, u);
+    dpwfb = dpwffcfbar(p, u);
 
     return -bc_a * u * u * (dpwfb * dpwfb);
 }
@@ -105,7 +118,7 @@ double ddpwficf_dCbar(const void *parameters, double u)
 * space. numerical inversion of the Laplace transform using Stehfest's
 * algorithm
 */
-double dpwficf(const modelparameters *p, double t)
+double dpwffcf(const modelparameters *p, double t)
 {
     double f;
 
@@ -115,7 +128,7 @@ double dpwficf(const modelparameters *p, double t)
     }
     else
     {
-        f = stehfest_ilt(&dpwficfbar, p, p->nstehfest, p->v, t);
+        f = stehfest_ilt(&dpwffcfbar, p, p->nstehfest, p->v, t);
     }
 
     return f;
@@ -128,7 +141,7 @@ d(dpwf)/dC function function in physical space. numerical
 inversion of the Laplace transform using Stehfest's
 algorithm
 */
-double ddpwficf_dC(const modelparameters *p, double t)
+double ddpwffcf_dC(const modelparameters *p, double t)
 {
     double f;
 
@@ -138,7 +151,7 @@ double ddpwficf_dC(const modelparameters *p, double t)
     }
     else
     {
-        f = stehfest_ilt(&ddpwficf_dCbar, p, p->nstehfest, p->v, t);
+        f = stehfest_ilt(&ddpwffcf_dCbar, p, p->nstehfest, p->v, t);
     }
 
     return f;
