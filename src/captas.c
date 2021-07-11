@@ -757,8 +757,10 @@ void set_parameters(modelparameters *par)
 	par->dr_dx[PWFDPTSP][WELLBORE_STORAGE] = ddpwfdptsp_dC;
 
 	par->dr_dx[PWFICF][WELLBORE_STORAGE]   = ddpwficf_dC;
+	par->dr_dx[PWFICF][SKIN_FACTOR]        = ddpwficf_dS;
 
 	par->dr_dx[PWFFCF][WELLBORE_STORAGE]   = ddpwffcf_dC;
+	par->dr_dx[PWFFCF][SKIN_FACTOR]        = ddpwffcf_dS;
 
 	par->dr_dx[PWF][INITIAL_PRESSURE]      =
 	par->dr_dx[PWFNFOB][INITIAL_PRESSURE]  =
