@@ -20,6 +20,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 #include <math.h>
 #include <malloc.h>
@@ -33,7 +34,6 @@
 #include "stehfest/stehfest.h"
 #include "utils/utils.h"
 
-#include "models/models.h"
 #include "captas.h"
 
 #define VERSION "0.0"
@@ -106,6 +106,7 @@ int main(int argc, char *argv[])
 	/*************************************************************************/
 
 	parse_args(argc, argv, &par);
+	init_parameters(&par);
 	read_inifile(&par);
 	set_parameters(&par);
 	/*************************************************************************/
@@ -411,8 +412,8 @@ int main(int argc, char *argv[])
 	if(par.plots){
 		gnuplot_close(hcartesian);
 		if(par.testtype != MULTIRATE){
-            gnuplot_close(hsemilog);
-            gnuplot_close(hloglog);
+			gnuplot_close(hsemilog);
+			gnuplot_close(hloglog);
 		}
 	}
 	/*************************************************************************/
@@ -425,298 +426,140 @@ int main(int argc, char *argv[])
 
 
 
-/**
-This function reads a list of parameters from a inifile and copies
-the parameters to the structure "par".
-*/
-void read_inifile(modelparameters *par)
-{
-	char *str;
-	dictionary *ini;
 
-	ini = iniparser_load(par->inifile);
-	if(ini == NULL) {
-		printf("\n cannot parse ini file: \n");
-		exit(EXIT_FAILURE);
+
+/**
+Process the command line arguments
+*/
+void parse_args(int argc, char *argv[], modelparameters *par)
+{
+	int option_index = 0;
+
+	while (( option_index = getopt(argc, argv, "hv")) != -1){
+		switch(option_index){
+		case 'h':
+			help_msg();
+			exit(EXIT_SUCCESS);
+			break;
+		case 'v':
+			print_version();
+			exit(EXIT_SUCCESS);
+			break;
+		case '?':         /* Invalid option or missing argument returns '?' */
+		default:
+			help_msg();
+			exit(EXIT_FAILURE); /* helpmsg() exits with error */
+		}
 	}
 
-	//iniparser_dump_ini(ini, stdout);
-
-	/********************* reading data in ini file ********************/
-	par->mode     = iniparser_getint(ini, "Program mode:mode",         0);
-	par->units    = iniparser_getint(ini, "Units system:units",        0);
-	par->testtype = iniparser_getint(ini, "Test description:testtype", 1);
-
-	par->phi = iniparser_getdouble(ini, "Test description:phi", -1);
-	par->B   = iniparser_getdouble(ini, "Test description:B",   -1);
-	par->mu  = iniparser_getdouble(ini, "Test description:mu",   1);
-	par->h   = iniparser_getdouble(ini, "Test description:h",    1);
-	par->rw  = iniparser_getdouble(ini, "Test description:rw",   1);
-	par->ct  = iniparser_getdouble(ini, "Test description:ct",   1);
-	par->pi  = iniparser_getdouble(ini, "Test description:pi",   1);
-	par->S   = iniparser_getdouble(ini, "Test description:S",    1);
-	par->k   = iniparser_getdouble(ini, "Test description:k",    1);
-	par->C   = iniparser_getdouble(ini, "Test description:C",    1);
-	par->re  = iniparser_getdouble(ini, "Test description:re",   0);
-	par->L   = iniparser_getdouble(ini, "Test description:L",    0);
-	par->w1  = iniparser_getdouble(ini, "Test description:w1",   0);
-	par->w2  = iniparser_getdouble(ini, "Test description:w2",   0);
-	par->w1x = iniparser_getdouble(ini, "Test description:w1x",  0);
-	par->w2x = iniparser_getdouble(ini, "Test description:w2x",  0);
-	par->w1y = iniparser_getdouble(ini, "Test description:w1y",  0);
-	par->w2y = iniparser_getdouble(ini, "Test description:w2y",  0);
-	par->xf  = iniparser_getdouble(ini, "Test description:xf",   0);
-	par->fc  = iniparser_getdouble(ini, "Test description:fc",   0);
-	par->omega  = iniparser_getdouble(ini, "Test description:omega",  0);
-	par->lambda = iniparser_getdouble(ini, "Test description:lambda", 0);
-
-	str = iniparser_getstring(ini, "Test description:pressfile", NULL);
-	strcpy(par->pressfile, str);
-	par->presssize = iniparser_getint(ini, "Test description:presssize", 1);
-
-	str = iniparser_getstring(ini, "Test description:ratefile",  NULL);
-	strcpy(par->ratefile, str);
-	par->ratesize = iniparser_getint(ini, "Test description:ratesize",   1);
-
-	par->rp_S   = iniparser_getboolean(ini,
-		"Regression parameters:rp_S",  0);
-	par->rp_k   = iniparser_getboolean(ini,
-		"Regression parameters:rp_k",  0);
-	par->rp_C   = iniparser_getboolean(ini,
-		"Regression parameters:rp_C",  0);
-	par->rp_pi  = iniparser_getboolean(ini,
-		"Regression parameters:rp_pi", 0);
-	par->rp_re  = iniparser_getboolean(ini,
-		"Regression parameters:rp_re", 0);
-	par->rp_L   = iniparser_getboolean(ini,
-		"Regression parameters:rp_L",  0);
-	par->rp_w1  = iniparser_getboolean(ini,
-		"Regression parameters:rp_w1",  0);
-	par->rp_w2  = iniparser_getboolean(ini,
-		"Regression parameters:rp_w2",  0);
-	par->rp_w1x = iniparser_getboolean(ini,
-		"Regression parameters:rp_w1x", 0);
-	par->rp_w2x = iniparser_getboolean(ini,
-		"Regression parameters:rp_w2x", 0);
-	par->rp_w1y = iniparser_getboolean(ini,
-		"Regression parameters:rp_w1y", 0);
-	par->rp_w2y = iniparser_getboolean(ini,
-		"Regression parameters:rp_w2y", 0);
-    par->rp_xf  = iniparser_getboolean(ini,
-		"Regression parameters:rp_xf",  0);
-    par->rp_fc  = iniparser_getboolean(ini,
-		"Regression parameters:rp_fc",  0);
-    par->rp_omega  = iniparser_getboolean(ini,
-		"Regression parameters:rp_omega", 0);
-    par->rp_lambda = iniparser_getboolean(ini,
-		"Regression parameters:rp_lambda", 0);
-
-	par->jac_S   = iniparser_getint(ini,
-		"Regression parameters derivatives:jac_S",  2);
-	par->jac_k   = iniparser_getint(ini,
-		"Regression parameters derivatives:jac_k",  2);
-	par->jac_C   = iniparser_getint(ini,
-		"Regression parameters derivatives:jac_C",  2);
-	par->jac_pi  = iniparser_getint(ini,
-		"Regression parameters derivatives:jac_pi", 2);
-	par->jac_re  = iniparser_getint(ini,
-		"Regression parameters derivatives:jac_re", 2);
-	par->jac_L   = iniparser_getint(ini,
-		"Regression parameters derivatives:jac_L",  2);
-	par->jac_w1  = iniparser_getint(ini,
-		"Regression parameters derivatives:jac_w1", 2);
-	par->jac_w2  = iniparser_getint(ini,
-		"Regression parameters derivatives:jac_w2", 2);
-	par->jac_w1x = iniparser_getint(ini,
-		"Regression parameters derivatives:jac_w1x",2);
-	par->jac_w2x = iniparser_getint(ini,
-		"Regression parameters derivatives:jac_w2x",2);
-	par->jac_w1y = iniparser_getint(ini,
-		"Regression parameters derivatives:jac_w1y",2);
-	par->jac_w2y = iniparser_getint(ini,
-		"Regression parameters derivatives:jac_w2y",2);
-    par->jac_xf  = iniparser_getint(ini,
-		"Regression parameters derivatives:jac_xf", 2);
-    par->jac_fc  = iniparser_getint(ini,
-		"Regression parameters derivatives:jac_fc", 2);
-    par->jac_omega  = iniparser_getint(ini,
-		"Regression parameters derivatives:jac_omega", 2);
-    par->jac_lambda = iniparser_getint(ini,
-		"Regression parameters derivatives:jac_lambda",2);
-
-	str = iniparser_getstring(ini, "Output:outfile", NULL);
-	strcpy(par->outfile, str);
-	par->plots = iniparser_getint(ini, "Output:plots", 0);
-
-	par->model = iniparser_getint(ini, "Regression model:model", 1);
-
-	par->nstehfest = iniparser_getint(ini,
-		"Stehfest parameters:nstehfest", 14);
-
-	par->Lder = iniparser_getdouble(ini,
-		"Derivative parameters:Lder", 0.1);
-	/*************************************************************************/
-
-	iniparser_freedict(ini);
+	if(argc < 2){
+		printf("<inifile> not specified...\n\n");
+		help_msg();
+		exit(EXIT_FAILURE);
+	}
+	else{
+		strcpy(par->inifile, argv[1]);
+		printf("reading inifile: %s\n\n", par->inifile);
+	}
 
 	return;
 }
 /*****************************************************************************/
 
 
-/**
-This function sets some parameters of the structure "par".
-*/
-void set_parameters(modelparameters *par)
+
+void help_msg(void)
 {
-	int i = 0, j = 0;
+	printf("\nUsage: capta [options] [ini_file]\n");
+	printf("\n\
+		   Options:\n\
+		   -h,      show this help and exit\n\
+		   -v,      print version and exit\n");
+	return;
+}
+/*****************************************************************************/
 
-	par->nevents	= par->ratesize;
-	par->m			= par->presssize;
-	par->n =
-		par->rp_S  +
-		par->rp_k  +
-		par->rp_C  +
-		par->rp_pi +
-		par->rp_re +
-		par->rp_L  +
-		par->rp_w1 +
-		par->rp_w2 +
-		par->rp_w1x +
-		par->rp_w2x +
-		par->rp_w1y +
-		par->rp_w2y +
-		par->rp_xf +
-		par->rp_fc +
-		par->rp_omega +
-		par->rp_lambda;
 
-	if(par->nstehfest < 4 ||
-		par->nstehfest > 20 ||
-		par->nstehfest%2 != 0){
-			printf("Stehfest's N must be even, 4 <= N <= 20\n");
-			printf("using default value N = 12\n");
-			par->nstehfest = 12;
-	}
-	par->v = NULL;
-	par->v = stehfest_init(par->nstehfest, par->v);
 
-	if((par->tps  = (double*)calloc(par->nevents, sizeof(double))) == NULL ||
-       (par->qBps = (double*)calloc(par->nevents, sizeof(double))) == NULL ||
-       (par->nps  = (int*)calloc(par->nevents, sizeof(int))) == NULL ||
-       (par->partype = (int*)calloc(par->n, sizeof(int))) == NULL ||
-       (par->jactype = (int*)calloc(par->n, sizeof(int))) == NULL){
+void print_version(void)
+{
+	printf("captas version %s\n", VERSION);
+	return;
+}
+/*****************************************************************************/
 
-        printf("\n memory allocation failure \n");
-        exit(EXIT_FAILURE);
-	}
 
-	i = 0;
-	if(par->rp_k == 1){
-		par->partype[i] = PERMEABILITY;
-		par->jactype[i] = par->jac_k;
-		i++;
-	}
-	if(par->rp_S == 1){
-		par->partype[i] = SKIN_FACTOR;
-		par->jactype[i] = par->jac_S;
-		i++;
-	}
-	if(par->rp_C == 1){
-		par->partype[i] = WELLBORE_STORAGE;
-		par->jactype[i] = par->jac_C;
-		i++;
-	}
-	if(par->rp_pi == 1){
-		par->partype[i] = INITIAL_PRESSURE;
-		par->jactype[i] = par->jac_pi;
-		i++;
-	}
-	if(par->rp_re == 1){
-		par->partype[i] = EXTERNAL_RADIUS;
-		par->jactype[i] = par->jac_re;
-		i++;
-	}
-	if(par->rp_L  == 1){
-		par->partype[i] = DISTANCE_TO_FAULT;
-		par->jactype[i] = par->jac_L;
-		i++;
-	}
-	if(par->rp_w1  == 1){
-		par->partype[i] = DISTANCE_TO_FAULT_1;
-		par->jactype[i] = par->jac_w1;
-		i++;
-	}
-	if(par->rp_w2  == 1){
-		par->partype[i] = DISTANCE_TO_FAULT_2;
-		par->jactype[i] = par->jac_w2;
-		i++;
-	}
-	if(par->rp_w1x == 1){
-		par->partype[i] = DISTANCE_TO_FAULT_1_X;
-		par->jactype[i] = par->jac_w1x;
-		i++;
-	}
-	if(par->rp_w2x == 1){
-		par->partype[i] = DISTANCE_TO_FAULT_2_X;
-		par->jactype[i] = par->jac_w2x;
-		i++;
-	}
-	if(par->rp_w1y == 1){
-		par->partype[i] = DISTANCE_TO_FAULT_1_Y;
-		par->jactype[i] = par->jac_w1y;
-		i++;
-	}
-	if(par->rp_w2y == 1){
-		par->partype[i] = DISTANCE_TO_FAULT_2_Y;
-		par->jactype[i] = par->jac_w2y;
-		i++;
-	}
-	if(par->rp_xf  == 1){
-		par->partype[i] = FRACTURE_HALF_LENGTH;
-		par->jactype[i] = par->jac_xf;
-		i++;
-	}
-	if(par->rp_fc  == 1){
-		par->partype[i] = FRACTURE_CONDUCTIVITY;
-		par->jactype[i] = par->jac_fc;
-		i++;
-	}
-    if(par->rp_omega  == 1){
-		par->partype[i] = OMEGA;
-		par->jactype[i] = par->jac_omega;
-		i++;
-	}
-    if(par->rp_lambda == 1){
-		par->partype[i] = LAMBDA;
-		par->jactype[i] = par->jac_lambda;
-		i++;
-	}
 
-	/******************** pointers to delta_pwf functions ********************/
-	par->dpwffcn[PWF]                       = dpwf;
-	par->dpwffcn[PWFT]                      = dpwf;
-	par->dpwffcn[PWFNFOB]                   = dpwfnfob;
-	par->dpwffcn[PWFCPOB]                   = dpwfcpob;
-	par->dpwffcn[PWFF]                      = dpwff;
-	par->dpwffcn[PWFC]                      = dpwfc;
-	par->dpwffcn[PWFCL]                     = dpwfcl;
-	par->dpwffcn[PWFRECT]                   = dpwfrect;
-	par->dpwffcn[PWFDPPSS]                  = dpwfdppss;
-	par->dpwffcn[PWFDPTSL]                  = dpwfdptsl;
-	par->dpwffcn[PWFDPTSP]                  = dpwfdptsp;
-	par->dpwffcn[PWFICF]                    = dpwficf;
-	par->dpwffcn[PWFFCF]                    = dpwffcf;
+double f_default(void)
+{
+    printf("\n you are trying to use a model or an analytic derivative that \
+           is not available.\n");
+    exit(EXIT_FAILURE);
+}
+
+
+
+/**
+this function initializes the model parameters structure with the pointers to
+the dwf models and the corresponding analytical derivatives, and some
+parameters to the default values.
+*/
+void init_parameters(modelparameters *par)
+{
+    int i, j;
+
+    for(i = 0; i < NPARAMETERS; i++){
+        par->rp[i]  = OFF;
+        par->jac[i] = CENTRAL;
+    }
+
+    par->parnames[PERMEABILITY]          = "k";
+    par->parnames[SKIN_FACTOR]           = "S";
+    par->parnames[WELLBORE_STORAGE]      = "C";
+    par->parnames[INITIAL_PRESSURE]      = "pi";
+    par->parnames[EXTERNAL_RADIUS]       = "re";
+    par->parnames[DISTANCE_TO_FAULT]     = "L";
+    par->parnames[DISTANCE_TO_FAULT_1]   = "w1";
+    par->parnames[DISTANCE_TO_FAULT_2]   = "w2";
+    par->parnames[DISTANCE_TO_FAULT_1_X] = "w1x";
+    par->parnames[DISTANCE_TO_FAULT_2_X] = "w2x";
+    par->parnames[DISTANCE_TO_FAULT_1_Y] = "w1y";
+    par->parnames[DISTANCE_TO_FAULT_2_Y] = "w2y";
+    par->parnames[OMEGA]                 = "omega";
+    par->parnames[LAMBDA]                = "lambda";
+    par->parnames[FRACTURE_HALF_LENGTH]  = "xf";
+    par->parnames[FRACTURE_CONDUCTIVITY] = "fc";
+
+    /******************** pointers to delta_pwf functions ********************/
+    for(i = 0; i <  NMODELS; i++){
+        par->dpwffcn[i] = f_default;
+	}
+	par->dpwffcn[PWF]       = dpwf;
+	par->dpwffcn[PWFT]      = dpwf;
+	par->dpwffcn[PWFNFOB]   = dpwfnfob;
+	par->dpwffcn[PWFCPOB]   = dpwfcpob;
+	par->dpwffcn[PWFF]      = dpwff;
+	par->dpwffcn[PWFC]      = dpwfc;
+	par->dpwffcn[PWFCL]     = dpwfcl;
+	par->dpwffcn[PWFRECT]   = dpwfrect;
+	par->dpwffcn[PWFDPPSS]  = dpwfdppss;
+	par->dpwffcn[PWFDPTSL]  = dpwfdptsl;
+	par->dpwffcn[PWFDPTSP]  = dpwfdptsp;
+	par->dpwffcn[PWFICF]    = dpwficf;
+	par->dpwffcn[PWFFCF]    = dpwffcf;
 
     /*************** pointers to interporosity flow functions ****************/
-    par->f[PWFDPPSS]                  = fpss;
-	par->f[PWFDPTSL]                  = ftsl;
-	par->f[PWFDPTSP]                  = ftsp;
+    for(i = 0; i <  NMODELS; i++){
+        par->f[i] = f_default;
+    }
+    par->f[PWFDPPSS]  = fpss;
+	par->f[PWFDPTSL]  = ftsl;
+	par->f[PWFDPTSP]  = ftsp;
 
 	/********* pointers to the derivatives of the delta_pwf functions ********/
 	for(i = 0; i <  NMODELS; i++){
 		for(j = 0; j < NPARAMETERS; j++){
-			par->dr_dx[i][j] = NULL;
+			par->dr_dx[i][j] = f_default;
 		}
 	}
 	par->dr_dx[PWF][PERMEABILITY]          = ddpwf_dk;
@@ -743,12 +586,12 @@ void set_parameters(modelparameters *par)
 	par->dr_dx[PWFCL][DISTANCE_TO_FAULT_1] = ddpwfcl_dw1;
 	par->dr_dx[PWFCL][DISTANCE_TO_FAULT_2] = ddpwfcl_dw2;
 
-	par->dr_dx[PWFCPOB][WELLBORE_STORAGE]  = ddpwfcpob_dC;
+    par->dr_dx[PWFCPOB][WELLBORE_STORAGE]  = ddpwfcpob_dC;
 
     par->dr_dx[PWFNFOB][PERMEABILITY]      = ddpwfnfob_dk;
-	par->dr_dx[PWFNFOB][WELLBORE_STORAGE]  = ddpwfnfob_dC;
-	par->dr_dx[PWFNFOB][SKIN_FACTOR]       = ddpwfnfob_dS;
-	par->dr_dx[PWFNFOB][EXTERNAL_RADIUS]   = ddpwfnfob_dre;
+    par->dr_dx[PWFNFOB][WELLBORE_STORAGE]  = ddpwfnfob_dC;
+    par->dr_dx[PWFNFOB][SKIN_FACTOR]       = ddpwfnfob_dS;
+    par->dr_dx[PWFNFOB][EXTERNAL_RADIUS]   = ddpwfnfob_dre;
 
 	par->dr_dx[PWFDPPSS][WELLBORE_STORAGE] = ddpwfdppss_dC;
 
@@ -777,6 +620,141 @@ void set_parameters(modelparameters *par)
 
 	par->dr_dx[PWFT][INITIAL_PRESSURE]     = drt_dpi;
 	/*************************************************************************/
+
+	par->C1  = C1_OILFIELD;
+	par->C2  = C2_OILFIELD;
+	par->C3  = C3_OILFIELD;
+
+	par->nstehfest = NSTEHFEST_DEFAULT;
+	par->Lder      = LDER_DEFAULT;
+
+	return;
+}
+
+
+
+/**
+this function reads a list of parameters from a inifile and copies
+the parameters to the structure "par".
+*/
+void read_inifile(modelparameters *par)
+{
+	char *str;
+	char
+	*strval = "Test description:",
+	*strsta = "Regression parameters:rp_",
+	*strjac = "Regression parameters derivatives:jac_";
+	char *strtmp[LENGTENTRY];
+	dictionary *ini;
+	int i;
+
+	ini = iniparser_load(par->inifile);
+	if(ini == NULL) {
+		printf("\n cannot parse ini file: \n");
+		exit(EXIT_FAILURE);
+	}
+
+	//iniparser_dump_ini(ini, stdout);
+
+	/********************* reading data in ini file ********************/
+	par->mode     = iniparser_getint(ini, "Program mode:mode",         REGRESSION);
+	par->units    = iniparser_getint(ini, "Units system:units",        OILFIELD);
+	par->testtype = iniparser_getint(ini, "Test description:testtype", DRAWDOWN);
+
+	par->phi = iniparser_getdouble(ini, "Test description:phi",  0.0);
+	par->B   = iniparser_getdouble(ini, "Test description:B",    0.0);
+	par->mu  = iniparser_getdouble(ini, "Test description:mu",   0.0);
+	par->h   = iniparser_getdouble(ini, "Test description:h",    0.0);
+	par->rw  = iniparser_getdouble(ini, "Test description:rw",   0.0);
+	par->ct  = iniparser_getdouble(ini, "Test description:ct",   0.0);
+
+	/* values */
+    for(i = 0; i < NPARAMETERS; i++){
+        strcat(strcpy(strtmp, strval), par->parnames[i]);
+        par->rpval[i] = iniparser_getdouble(ini, strtmp, 0.0);
+	}
+
+	/* status */
+    for(i = 0; i < NPARAMETERS; i++){
+        strcat(strcpy(strtmp, strsta), par->parnames[i]);
+        par->rp[i] = iniparser_getboolean(ini, strtmp, OFF);
+	}
+
+    /* derivatives */
+    for(i = 0; i < NPARAMETERS; i++){
+        strcat(strcpy(strtmp, strjac), par->parnames[i]);
+        par->jac[i] = iniparser_getint(ini, strtmp, CENTRAL);
+	}
+
+	str = iniparser_getstring(ini, "Test description:pressfile", NULL);
+	strcpy(par->pressfile, str);
+	par->presssize = iniparser_getint(ini, "Test description:presssize", 0);
+
+	str = iniparser_getstring(ini, "Test description:ratefile",  NULL);
+	strcpy(par->ratefile, str);
+	par->ratesize = iniparser_getint(ini, "Test description:ratesize",   0);
+
+	str = iniparser_getstring(ini, "Output:outfile", NULL);
+	strcpy(par->outfile, str);
+	par->plots = iniparser_getboolean(ini, "Output:plots", OFF);
+
+	par->model = iniparser_getint(ini, "Regression model:model", PWF);
+
+	par->nstehfest = iniparser_getint(ini, "Stehfest parameters:nstehfest", NSTEHFEST_DEFAULT);
+
+	par->Lder = iniparser_getdouble(ini, "Derivative parameters:Lder", LDER_DEFAULT);
+	/*************************************************************************/
+
+	iniparser_freedict(ini);
+
+	return;
+}
+/*****************************************************************************/
+
+
+
+/**
+This function sets some parameters of the structure "par".
+*/
+void set_parameters(modelparameters *par)
+{
+	int i = 0, j = 0;
+
+	par->nevents	= par->ratesize;
+	par->m			= par->presssize;
+
+    par->n = 0;
+    for(i = 0; i < NPARAMETERS; i++){
+        par->n += par->rp[i];
+    }
+
+	if(par->nstehfest < 4 ||
+		par->nstehfest > 20 ||
+		par->nstehfest%2 != 0){
+			printf("Stehfest's N must be even, 4 <= N <= 20\n");
+			printf("using default value N = %d\n", NSTEHFEST_DEFAULT);
+			par->nstehfest = NSTEHFEST_DEFAULT;
+	}
+	par->v = NULL;
+	par->v = stehfest_init(par->nstehfest, par->v);
+
+	if((par->tps  = (double*)calloc(par->nevents, sizeof(double))) == NULL ||
+       (par->qBps = (double*)calloc(par->nevents, sizeof(double))) == NULL ||
+       (par->nps  = (int*)calloc(par->nevents, sizeof(int))) == NULL ||
+       (par->partype = (int*)calloc(par->n, sizeof(int))) == NULL ||
+       (par->jactype = (int*)calloc(par->n, sizeof(int))) == NULL){
+
+        printf("\n memory allocation failure \n");
+        exit(EXIT_FAILURE);
+	}
+
+	for(i = 0, j = 0; i < NPARAMETERS; i++){
+		if(par->rp[i] == ON){
+			par->partype[j] = i;
+			par->jactype[j] = par->jac[i];
+			j++;
+		}
+	}
 
 	switch(par->units){
 	case ANP:
@@ -819,36 +797,157 @@ void set_parameters(modelparameters *par)
 
 
 /**
-this function called by lmder calculates the residual, the jacobian, or prints
-the values of x during an iteration, depending on the value of iflag.
-if iflag = RESIDUAL calculate the functions at x and return this vector
-in fvec. do not alter fjac.
-if iflag = JACOBIAN calculate the jacobian at x and return this matrix
-in fjac. do not alter fvec.
-the value of iflag should not be changed by fcn unless the user wants to
-terminate execution of lmder. in this case set iflag to a negative integer.
+this function calculates the elapsed time dt and the multi-rate equivalent time
+dte, for the array t of the structure "data", using the production events tps
+and qBs in the structure "par".
 */
-void resjacprn(int m, int n, double *x, double *fv, double **fjac,
-			   lmdatatype *data, void *par, int *iflag)
+void calc_plotting_abscissas(modelparameters *par, lmdatatype *data)
 {
-	switch(*iflag){
-	case JACOBIAN:
-		jacobian(m, n, x, fv, fjac, data, par, iflag);
-		break;
-	case RESIDUAL:
-		residual(m, n, x, fv,       data, par, iflag);
-		break;
-	case PRINT:
-		printiter(n, x);
-		break;
-	default:
-		printiter(n, x);
-		break;
+	int i, j;
+	double qBnumer, qBdenom;
+
+	for(i = 0; i < par->m; i++) {
+
+		data->dt[i]  = data->t[i] - par->tps[par->nevents-1];
+		data->dte[i] = 0.0;
+
+		if(data->dt[i] > 0.0) {
+			for(j = 0; j < par->nevents - 1; j++) {
+				if(data->t[i] > par->tps[j]) {
+					qBnumer = (j == 0 ? par->qBps[0] : par->qBps[j] - par->qBps[j-1]);
+					qBdenom = par->qBps[par->nevents-1] - par->qBps[par->nevents-2];
+					data->dte[i] += (qBnumer / qBdenom)
+						* log((data->t[i] - par->tps[j])
+						/ (par->tps[par->nevents-1] - par->tps[j]));
+				}
+			}
+
+			if(data->t[i] > par->tps[par->nevents - 1]) {
+				data->dte[i] += log(data->dt[i]);
+			}
+
+			data->dte[i] = exp(data->dte[i]);
+		}
 	}
 
 	return;
 }
 /*****************************************************************************/
+
+
+
+/**
+this function calculates the pressure drop dp  = p(dt = 0) - p(dt), for the
+values of t in the structure "data", using the production events tps and qBs
+in the structure "par".
+*/
+void calc_pressure_drop(modelparameters *par, lmdatatype *data)
+{
+	int i;
+
+	double pi, p_at_0;  /* pressure at elapsed time zero */
+
+	pi = par->rpval[INITIAL_PRESSURE];
+
+	switch(par->testtype) {
+	case MULTIRATE:
+	case DRAWDOWN:
+	case INJECTION:
+		p_at_0 = pi;
+		break;
+	case BUILDUP:
+	case FALLOFF:
+	case MULTIRATE_BUILDUP:
+	case MULTIRATE_DRAWDOWN:
+		p_at_0 = data->p[0];
+		break;
+	default:
+		p_at_0 = pi;
+	}
+
+	for(i = 0; i < par->m; i++) {
+		data->dp[i] = par->sign*(p_at_0 - data->p[i]);
+	}
+
+	return;
+}
+/*****************************************************************************/
+
+
+
+/**
+this function calculates the logarithmic derivative of the pressure drop dp
+with respect to the multi-rate equivalent time dte in the structure "data",
+using the parameters in the structure "par". The logarithmic derivative is
+stored in data.derl and the group dp/(2*derl) in data.derg.
+*/
+void calc_log_derivative(modelparameters *par, lmdatatype *data)
+{
+	int i = 0, j = 1, k = 1;
+	double drigth, dleft;
+
+	while(i < par->m){
+
+		drigth = 0.0;
+		dleft  = 0.0;
+
+		/************************ dln(dp)/dln(dt) ****************************/
+		if(i == 0){
+			drigth = log(data->dte[i+j]/data->dte[i]);
+			while(drigth < par->Lder && (i + j) < (par->m - 1)){
+				j++;
+				drigth = log(data->dte[i+j]/data->dte[i]);
+			}
+			data->derg[i] = log(data->dp[i+j]/data->dp[i])/drigth;
+		}
+		else if(i == (par->m - 1)){
+			dleft = log(data->dte[i]/data->dte[i-k]);
+			while(dleft < par->Lder && (i - k) > 0){
+				k++;
+				dleft = log(data->dte[i]/data->dte[i-k]);
+			}
+			data->derg[i] = log(data->dp[i]/data->dp[i-k])/dleft;
+		}
+		else{
+
+			drigth = log(data->dte[i+j]/data->dte[i]);
+			while(drigth < par->Lder && (i + j) < (par->m - 1)){
+				j++;
+				drigth = log(data->dte[i+j]/data->dte[i]);
+			}
+
+			dleft = log(data->dte[i]/data->dte[i-k]);
+			while(dleft < par->Lder && (i - k) > 0){
+				k++;
+				dleft = log(data->dte[i]/data->dte[i-k]);
+			}
+
+			data->derg[i] = dleft*log(data->dp[i+j])
+				/ ( drigth*log(data->dte[i+j]/data->dte[i-k]) )
+
+				+ log(data->dte[i+j]*data->dte[i-k] /
+				(data->dte[i]*data->dte[i]))
+				*log(data->dp[i])
+				/ ( drigth*dleft )
+
+				- drigth*log(data->dp[i-k])
+				/ ( dleft*log(data->dte[i+j]/data->dte[i-k]) );
+		}
+
+		/***************** Bourdet logarithmic derivative ********************/
+		data->derl[i] = data->derg[i] * data->dp[i];
+
+		/***** group dp/(2*derl) (Chow, Onur, Reynolds, Duong, Ozkan) ********/
+		data->derg[i] = 0.5 / data->derg[i];
+
+		i++;
+		j = k = 1;
+	}
+
+	return;
+}
+/*****************************************************************************/
+
 
 
 /**
@@ -859,6 +958,9 @@ parameters in the "par" structure, for the times in the "t" vector of the
 void calc_pressure(modelparameters *par, lmdatatype *data)
 {
 	int i, j;
+	double pi;
+
+	pi = par->rpval[INITIAL_PRESSURE];
 
 	for(i = 0; i < par->m; i++){
 		if(data->t[i] >= par->tps[0]){
@@ -873,7 +975,7 @@ void calc_pressure(modelparameters *par, lmdatatype *data)
 					(par->dpwffcn)[par->model](par, data->t[i] - par->tps[j]);
 			}
 		}
-		data->p[i]  = par->pi - data->dp[i];
+		data->p[i]  = pi - data->dp[i];
 	}
 
 	return;
@@ -881,79 +983,39 @@ void calc_pressure(modelparameters *par, lmdatatype *data)
 /*****************************************************************************/
 
 
-/**
-This function calculates the elapsed time dt and the multi-rate equivalent time
-dte, for the array t of the structure "data", using the production events tps
-and qBs in the structure "par".
-*/
-void calc_plotting_abscissas(modelparameters *par, lmdatatype *data)
-{
-	int i, j;
-	double qBnumer, qBdenom;
-
-	for(i = 0; i < par->m; i++){
-
-		data->dt[i]  = data->t[i] - par->tps[par->nevents-1];
-		data->dte[i] = 0.0;
-
-		if(data->dt[i] > 0.0){
-			for(j = 0; j < par->nevents - 1; j++){
-				if(data->t[i] > par->tps[j]){
-					qBnumer = (j == 0 ? par->qBps[0] : par->qBps[j] - par->qBps[j-1]);
-					qBdenom = par->qBps[par->nevents-1] - par->qBps[par->nevents-2];
-					data->dte[i] += (qBnumer / qBdenom)
-						* log((data->t[i] - par->tps[j])
-						/ (par->tps[par->nevents-1] - par->tps[j]));
-				}
-			}
-
-			if(data->t[i] > par->tps[par->nevents - 1]){
-				data->dte[i] += log(data->dt[i]);
-			}
-
-			data->dte[i] = exp(data->dte[i]);
-		}
-	}
-
-	return;
-}
-/*****************************************************************************/
-
 
 /**
-This function calculates the pressure drop dp  = p(dt = 0) - p(dt), for the
-values of t in the structure "data", using the production events tps and qBs
-in the structure "par".
+this function called by lmder calculates the residual, the jacobian, or prints
+the values of x during an iteration, depending on the value of iflag.
+if iflag = RESIDUAL calculate the functions at x and return this vector
+in fvec. do not alter fjac.
+if iflag = JACOBIAN calculate the jacobian at x and return this matrix
+in fjac. do not alter fvec.
+the value of iflag should not be changed by fcn unless the user wants to
+terminate execution of lmder. in this case set iflag to a negative integer.
 */
-void calc_pressure_drop(modelparameters *par, lmdatatype *data)
+void resjacprn(int m, int n, double *x, double *fv, double **fjac,
+			   lmdatatype *data, void *par, int *iflag)
 {
-	int i;
-
-	double p_at_0;  /* pressure at elapsed time zero */
-
-	switch(par->testtype){
-	case MULTIRATE:
-	case DRAWDOWN:
-	case INJECTION:
-		p_at_0 = par->pi;
+	switch(*iflag) {
+	case RESIDUAL:
+		residual(m, n, x, fv,       data, par, iflag);
 		break;
-	case BUILDUP:
-	case FALLOFF:
-	case MULTIRATE_BUILDUP:
-	case MULTIRATE_DRAWDOWN:
-		p_at_0 = data->p[0];
+	case JACOBIAN:
+		jacobian(m, n, x, fv, fjac, data, par, iflag);
+		break;
+	case PRINT:
+		printiter(n, x);
 		break;
 	default:
-		p_at_0 = par->pi;
-	}
-
-	for(i = 0; i < par->m; i++){
-		data->dp[i] = par->sign*(p_at_0 - data->p[i]);
+		printiter(n, x);
+		break;
 	}
 
 	return;
 }
 /*****************************************************************************/
+
 
 
 /**
@@ -964,19 +1026,21 @@ void residual(int m, int n, double *x, double *fv, lmdatatype *data,
 			  void *par, int *iflag)
 {
 	int i = 0, j = 0;
+	double pi;
 	modelparameters *mpar;
 
 	mpar = (modelparameters *)par;
 
 	setmodeltox(x, n, mpar);
 
-	/* calculates the residuals */
+	pi = mpar->rpval[INITIAL_PRESSURE];
+
 	for(i = 0; i < m; i++){
 		if(data->t[i] >= mpar->tps[0]){
 			mpar->qB = mpar->qBps[0];
 			fv[i] =
 				(mpar->dpwffcn)[mpar->model](mpar, data->t[i] - mpar->tps[0])
-				+ data->p[i] - mpar->pi;
+				+ data->p[i] - pi;
 		}
 		for(j = 1; j < mpar->nevents; j++){
 			mpar->qB = mpar->qBps[j] - mpar->qBps[j-1];
@@ -990,6 +1054,7 @@ void residual(int m, int n, double *x, double *fv, lmdatatype *data,
 	return;
 }
 /*****************************************************************************/
+
 
 
 /**
@@ -1045,490 +1110,6 @@ void jacobian(int m, int n, double *x, double *fv, double **fjac,
 
 
 
-/**
-This function calculates the logarithmic derivative of the pressure drop dp
-with respect to the multi-rate equivalent time dte in the structure "data",
-using the parameters in the structure "par". The logarithmic derivative is
-stored in data.derl and the group dp/(2*derl) in data.derg.
-*/
-void calc_log_derivative(modelparameters *par, lmdatatype *data)
-{
-	int i = 0, j = 1, k = 1;
-	double drigth, dleft;
-
-	while(i < par->m){
-
-		drigth = 0.0;
-		dleft  = 0.0;
-
-		/************************ dln(dp)/dln(dt) ****************************/
-		if(i == 0){
-            drigth = log(data->dte[i+j]/data->dte[i]);
-			while(drigth < par->Lder && (i + j) < (par->m - 1)){
-				j++;
-				drigth = log(data->dte[i+j]/data->dte[i]);
-			}
-			data->derg[i] = log(data->dp[i+j]/data->dp[i])/drigth;
-		}
-		else if(i == (par->m - 1)){
-		    dleft = log(data->dte[i]/data->dte[i-k]);
-			while(dleft < par->Lder && (i - k) > 0){
-				k++;
-				dleft = log(data->dte[i]/data->dte[i-k]);
-			}
-			data->derg[i] = log(data->dp[i]/data->dp[i-k])/dleft;
-		}
-		else{
-
-            drigth = log(data->dte[i+j]/data->dte[i]);
-			while(drigth < par->Lder && (i + j) < (par->m - 1)){
-				j++;
-				drigth = log(data->dte[i+j]/data->dte[i]);
-			}
-
-			dleft = log(data->dte[i]/data->dte[i-k]);
-			while(dleft < par->Lder && (i - k) > 0){
-				k++;
-				dleft = log(data->dte[i]/data->dte[i-k]);
-			}
-
-			data->derg[i] = dleft*log(data->dp[i+j])
-				/ ( drigth*log(data->dte[i+j]/data->dte[i-k]) )
-
-				+ log(data->dte[i+j]*data->dte[i-k] /
-				(data->dte[i]*data->dte[i]))
-				*log(data->dp[i])
-				/ ( drigth*dleft )
-
-				- drigth*log(data->dp[i-k])
-				/ ( dleft*log(data->dte[i+j]/data->dte[i-k]) );
-		}
-
-		/***************** Bourdet logarithmic derivative ********************/
-		data->derl[i] = data->derg[i] * data->dp[i];
-
-		/***** group dp/(2*derl) (Chow, Onur, Reynolds, Duong, Ozkan) ********/
-		data->derg[i] = 0.5 / data->derg[i];
-
-		i++;
-		j = k = 1;
-	}
-
-	return;
-}
-/*****************************************************************************/
-
-
-/**
-*/
-void setxtomodel(double *x, int n, modelparameters *par)
-{
-	int i;
-
-	for(i = 0; i < n; i++){
-		switch(par->partype[i]){
-		case PERMEABILITY:
-			if(par->model == PWFT)
-				x[i] = log(par->k);
-			else
-				x[i] = par->k;
-			break;
-		case SKIN_FACTOR:
-			if(par->model == PWFT)
-				x[i] = log( (par->S + 8.0)/(25.0 - par->S) );
-			else
-				x[i] = par->S;
-			break;
-		case WELLBORE_STORAGE:
-			if(par->model == PWFT)
-				x[i] = log(par->C);
-			else
-				x[i] = par->C;
-			break;
-		case INITIAL_PRESSURE:
-			if(par->model == PWFT)
-				x[i] = log(par->pi);
-			else
-                x[i] = par->pi;
-			break;
-		case EXTERNAL_RADIUS:
-			x[i] = par->re;
-			break;
-		case DISTANCE_TO_FAULT:
-			x[i] = par->L;
-			break;
-		case DISTANCE_TO_FAULT_1:
-			x[i] = par->w1;
-			break;
-		case DISTANCE_TO_FAULT_2:
-			x[i] = par->w2;
-			break;
-		case DISTANCE_TO_FAULT_1_X:
-			x[i] = par->w1x;
-			break;
-		case DISTANCE_TO_FAULT_2_X:
-			x[i] = par->w2x;
-			break;
-		case DISTANCE_TO_FAULT_1_Y:
-			x[i] = par->w1y;
-			break;
-		case DISTANCE_TO_FAULT_2_Y:
-			x[i] = par->w2y;
-			break;
-        case OMEGA:
-			x[i] = par->omega;
-			break;
-        case LAMBDA:
-			x[i] = par->lambda;
-			break;
-        case FRACTURE_HALF_LENGTH:
-			x[i] = par->xf;
-			break;
-        case FRACTURE_CONDUCTIVITY:
-			x[i] = par->fc;
-			break;
-		default:
-			break;
-		}
-	}
-
-	return;
-}
-/*****************************************************************************/
-
-
-/**
-*/
-void setmodeltox(double *x, int n, modelparameters *par)
-{
-	int i;
-
-	for(i = 0; i < n; i++){
-		switch(par->partype[i]){
-		case PERMEABILITY:
-			if(par->model == PWFT)
-				par->k = exp(x[i]);
-			else
-				par->k = x[i];
-			break;
-		case SKIN_FACTOR:
-			if(par->model == PWFT)
-				par->S = (25.0*exp(x[i]) - 8.0)/(1.0 + exp(x[i]));
-			else
-				par->S = x[i];
-			break;
-		case WELLBORE_STORAGE:
-			if(par->model == PWFT)
-				par->C = exp(x[i]);
-			else
-				par->C = x[i];
-			break;
-		case INITIAL_PRESSURE:
-			if(par->model == PWFT)
-				par->pi = exp(x[i]);
-			else
-                par->pi = x[i];
-			break;
-		case EXTERNAL_RADIUS:
-			par->re = x[i];
-			break;
-		case DISTANCE_TO_FAULT:
-			par->L  = x[i];
-			break;
-		case DISTANCE_TO_FAULT_1:
-			par->w1 = x[i];
-			break;
-		case DISTANCE_TO_FAULT_2:
-			par->w2 = x[i];
-			break;
-		case DISTANCE_TO_FAULT_1_X:
-			par->w1x = x[i];
-			break;
-		case DISTANCE_TO_FAULT_2_X:
-			par->w2x = x[i];
-			break;
-		case DISTANCE_TO_FAULT_1_Y:
-			par->w1y = x[i];
-			break;
-		case DISTANCE_TO_FAULT_2_Y:
-			par->w2y = x[i];
-			break;
-        case OMEGA:
-			par->omega  = x[i];
-			break;
-        case LAMBDA:
-			par->lambda = x[i];
-			break;
-        case FRACTURE_HALF_LENGTH:
-			par->xf     = x[i];
-			break;
-        case FRACTURE_CONDUCTIVITY:
-			par->fc     = x[i];
-			break;
-		default:
-			break;
-		}
-	}
-
-	return;
-}
-/*****************************************************************************/
-
-
-/**
-jacobian approximation by the finite difference method.
-*/
-void fd_jacobian(int m, int n, double *x, int k, double *fv, double **fjac,
-		   lmdatatype *data, void *par, int *iflag)
-{
-	int i;
-	double eps, h, xi;
-	double *fip1, *fim1;
-	modelparameters *mpar;
-
-	mpar = (modelparameters *)par;
-
-	if(mpar->jactype[k] != CENTERED &&
-		mpar->jactype[k] != FORWARD &&
-		mpar->jactype[k] != BACKWARD){
-			printf("\n error on jactype values \n");
-			exit(EXIT_FAILURE);
-	}
-
-	eps = sqrt(sqrt(MACHEPS));
-	//eps = sqrt(MACHEPS);
-
-	xi = x[k];
-	if(xi == 0.0)
-		h = eps;
-	else
-		h = eps * fabs(xi);
-
-	if(mpar->jactype[k] == CENTERED || mpar->jactype[k] == FORWARD){
-		if((fip1 = (double*)calloc(m, sizeof(double))) == NULL){
-            printf("\n memory allocation failure \n");
-            exit(EXIT_FAILURE);
-		}
-		x[k] = xi + h;
-		residual(m, n, x, fip1, data, par, iflag);
-	}
-	if(mpar->jactype[k] == CENTERED || mpar->jactype[k] == BACKWARD){
-		if((fim1 = (double*)calloc(m, sizeof(double))) == NULL){
-            printf("\n memory allocation failure \n");
-            exit(EXIT_FAILURE);
-		}
-		x[k] = xi - h;
-		residual(m, n, x, fim1, data, par, iflag);
-	}
-
-	for(i = 0; i < m; i++){
-		switch(mpar->jactype[k]){
-		case CENTERED :
-			fjac[k][i] = (fip1[i] - fim1[i]) / (2.0*h);
-			break;
-		case FORWARD :
-			fjac[k][i] = (fip1[i] -   fv[i]) / h;
-			break;
-		case BACKWARD :
-			fjac[k][i] = (fv[i]   - fim1[i]) / h;
-			break;
-		}
-	}
-
-	x[k] = xi;
-
-	if(mpar->jactype[k] == CENTERED || mpar->jactype[k] == FORWARD){
-		free(fip1);
-	}
-	if(mpar->jactype[k] == CENTERED || mpar->jactype[k] == BACKWARD){
-		free(fim1);
-	}
-
-	return;
-}
-/*****************************************************************************/
-
-
-/**
-*/
-void print_par(FILE *file, double *x, double *ci, double **corr, int n,
-               modelparameters *par)
-{
-	int i, j;
-
-	fprintf(file, "Parameters: \n");
-
-	for(i = 0; i < n; i++){
-		switch(par->partype[i]){
-		case PERMEABILITY:
-		    if(par->model == PWFT){
-                fprintf(file, "k       = % 12g\n", par->k);
-		        fprintf(file, "ln(k)   = % 12g +/- %12g ", x[i], ci[i]);
-		        fprintf(file, x[i] == 0.0 ? "\n" : "or +/- %4g%%\n" , ci[i]*100.0/fabs(x[i]));
-		    }
-			else{
-                fprintf(file, "k       = % 12g +/- %12g ", x[i], ci[i]);
-                fprintf(file, x[i] == 0.0 ? "\n" : "or +/- %4g%%\n" , ci[i]*100.0/fabs(x[i]));
-			}
-			break;
-		case SKIN_FACTOR:
-		    if(par->model == PWFT){
-                fprintf(file, "S       = % 12g\n", par->S);
-                fprintf(file, "ln(S*)  = % 12g +/- %12g ", x[i], ci[i]);
-		        fprintf(file, x[i] == 0.0 ? "\n" : "or +/- %4g%%\n" , ci[i]*100.0/fabs(x[i]));
-		    }
-		    else{
-		        fprintf(file, "S       = % 12g +/- %12g ", x[i], ci[i]);
-		        fprintf(file, x[i] == 0.0 ? "\n" : "or +/- %4g%%\n" , ci[i]*100.0/fabs(x[i]));
-		    }
-			break;
-		case WELLBORE_STORAGE:
-		    if(par->model == PWFT){
-                fprintf(file, "C       = % 12g\n", par->C);
-                fprintf(file, "ln(C)   = % 12g +/- %12.1E ", x[i], ci[i]);
-                fprintf(file, x[i] == 0.0 ? "\n" : "or +/- %4g%%\n" , ci[i]*100.0/fabs(x[i]));
-		    }
-		    else{
-                fprintf(file, "C       = % 12g +/- %12.1E ", x[i], ci[i]);
-                fprintf(file, x[i] == 0.0 ? "\n" : "or +/- %4g%%\n" , ci[i]*100.0/fabs(x[i]));
-		    }
-			break;
-		case INITIAL_PRESSURE:
-			if(par->model == PWFT){
-                fprintf(file, "p_i     = % 12g\n", par->pi);
-                fprintf(file, "ln(p_i) = % 12g +/- %12.1E ", x[i], ci[i]);
-                fprintf(file, x[i] == 0.0 ? "\n" : "or +/- %4g%%\n" , ci[i]*100.0/fabs(x[i]));
-		    }
-		    else{
-                fprintf(file, "p_i     = % 12g +/- %12g ", x[i], ci[i]);
-                fprintf(file, x[i] == 0.0 ? "\n" : "or +/- %4g%%\n" , ci[i]*100.0/fabs(x[i]));
-		    }
-			break;
-		case EXTERNAL_RADIUS:
-			fprintf(file, "r_e     = % 12g +/- %12g ", x[i], ci[i]);
-			fprintf(file, x[i] == 0.0 ? "\n" : "or +/- %4g%%\n" , ci[i]*100.0/fabs(x[i]));
-			break;
-		case DISTANCE_TO_FAULT:
-			fprintf(file, "L       = % 12g +/- %12g ", x[i], ci[i]);
-			fprintf(file, x[i] == 0.0 ? "\n" : "or +/- %4g%%\n" , ci[i]*100.0/fabs(x[i]));
-			break;
-		case DISTANCE_TO_FAULT_1:
-		    fprintf(file, "w1      = % 12g +/- %12g ", x[i], ci[i]);
-			fprintf(file, x[i] == 0.0 ? "\n" : "or +/- %4g%%\n" , ci[i]*100.0/fabs(x[i]));
-			break;
-		case DISTANCE_TO_FAULT_2:
-		    fprintf(file, "w2      = % 12g +/- %12g ", x[i], ci[i]);
-		    fprintf(file, x[i] == 0.0 ? "\n" : "or +/- %4g%%\n" , ci[i]*100.0/fabs(x[i]));
-			break;
-		case DISTANCE_TO_FAULT_1_X:
-			fprintf(file, "w1x     = % 12g +/- %12g ", x[i], ci[i]);
-			fprintf(file, x[i] == 0.0 ? "\n" : "or +/- %4g%%\n" , ci[i]*100.0/fabs(x[i]));
-			break;
-		case DISTANCE_TO_FAULT_2_X:
-			fprintf(file, "w2x     = % 12g +/- %12g ", x[i], ci[i]);
-			fprintf(file, x[i] == 0.0 ? "\n" : "or +/- %4g%%\n" , ci[i]*100.0/fabs(x[i]));
-			break;
-		case DISTANCE_TO_FAULT_1_Y:
-			fprintf(file, "w1y     = % 12g +/- %12g ", x[i], ci[i]);
-			fprintf(file, x[i] == 0.0 ? "\n" : "or +/- %4g%%\n" , ci[i]*100.0/fabs(x[i]));
-			break;
-		case DISTANCE_TO_FAULT_2_Y:
-			fprintf(file, "w2y     = % 12g +/- %12g ", x[i], ci[i]);
-			fprintf(file, x[i] == 0.0 ? "\n" : "or +/- %4g%%\n" , ci[i]*100.0/fabs(x[i]));
-			break;
-        case OMEGA:
-			fprintf(file, "omega   = % 12g +/- %12g ", x[i], ci[i]);
-			fprintf(file, x[i] == 0.0 ? "\n" : "or +/- %4g%%\n" , ci[i]*100.0/fabs(x[i]));
-			break;
-        case LAMBDA:
-			fprintf(file, "lambda  = % 12g +/- %12g ", x[i], ci[i]);
-			fprintf(file, x[i] == 0.0 ? "\n" : "or +/- %4g%%\n" , ci[i]*100.0/fabs(x[i]));
-			break;
-        case FRACTURE_HALF_LENGTH:
-			fprintf(file, "xf      = % 12g +/- %12g ", x[i], ci[i]);
-			fprintf(file, x[i] == 0.0 ? "\n" : "or +/- %4g%%\n" , ci[i]*100.0/fabs(x[i]));
-			break;
-        case FRACTURE_CONDUCTIVITY:
-			fprintf(file, "fc      = % 12g +/- %12g ", x[i], ci[i]);
-			fprintf(file, x[i] == 0.0 ? "\n" : "or +/- %4g%%\n" , ci[i]*100.0/fabs(x[i]));
-			break;
-		default:
-			break;
-		}
-	}
-
-    fprintf(file, "Correlation matrix: \n");
-    for(i = 0; i < n; i++){
-            for(j = 0; j < n; j++){
-                fprintf(file, "% .4E    ", corr[i][j]);
-            }
-            fprintf(file, "\n");
-    }
-
-	return;
-}
-/*****************************************************************************/
-
-
-/**
-Process the command line arguments
-*/
-void parse_args(int argc, char *argv[], modelparameters *par)
-{
-	int option_index = 0;
-
-	while (( option_index = getopt(argc, argv, "hv")) != -1){
-		switch(option_index){
-		case 'h':
-			help_msg();
-			exit(EXIT_SUCCESS);
-			break;
-		case 'v':
-			print_version();
-			exit(EXIT_SUCCESS);
-			break;
-		case '?':         /* Invalid option or missing argument returns '?' */
-		default:
-			help_msg();
-			exit(EXIT_FAILURE); /* helpmsg() exits with error */
-		}
-	}
-
-	if(argc < 2){
-		printf("<inifile> not specified...\n\n");
-		help_msg();
-		exit(EXIT_FAILURE);
-	}
-	else{
-		strcpy(par->inifile, argv[1]);
-		printf("reading inifile: %s\n\n", par->inifile);
-	}
-
-	return;
-}
-/*****************************************************************************/
-
-
-void help_msg(void)
-{
-	printf("\nUsage: capta [options] [ini_file]\n");
-	printf("\n\
-		   Options:\n\
-		   -h,      show this help and exit\n\
-		   -v,      print version and exit\n");
-	return;
-}
-/*****************************************************************************/
-
-
-void print_version(void)
-{
-	printf("captas version %s\n", VERSION);
-	return;
-}
-/*****************************************************************************/
-
-
 void printiter(int n, double *x)
 {
 	int i;
@@ -1544,21 +1125,168 @@ void printiter(int n, double *x)
 /*****************************************************************************/
 
 
+
+/**
+This function copies the parameters of the model, in the struct "par", to the
+corresponding vector of estimates x.
+*/
+void setxtomodel(double *x, int n, modelparameters *par)
+{
+	int i;
+
+	for(i = 0; i < n; i++){
+		if(par->model == PWFT) { // for transformed parameters
+			switch(par->partype[i]) {
+			case SKIN_FACTOR:
+				x[i] = log( (par->rpval[par->partype[i]] + 8.0)/(25.0 - par->rpval[par->partype[i]]) );
+				break;
+			case PERMEABILITY:
+			case WELLBORE_STORAGE:
+			case INITIAL_PRESSURE:
+				x[i] = log( par->rpval[par->partype[i]] );
+				break;
+			default:
+				x[i] = par->rpval[par->partype[i]];
+				break;
+			}
+		}
+		else{
+			x[i] = par->rpval[par->partype[i]];
+		}
+	}
+
+	return;
+}
+/*****************************************************************************/
+
+
+
+/**
+This function copies the values of the vector of estimates x to the
+corresponding parameters in the struct "par".
+*/
+void setmodeltox(double *x, int n, modelparameters *par)
+{
+	int i;
+
+	for(i = 0; i < n; i++){
+		if(par->model == PWFT){ // for transformed parameters
+			switch(par->partype[i]){
+			case SKIN_FACTOR:
+				par->rpval[par->partype[i]] = (25.0*exp(x[i]) - 8.0)/(1.0 + exp(x[i]));
+				break;
+			case PERMEABILITY:
+			case WELLBORE_STORAGE:
+			case INITIAL_PRESSURE:
+				par->rpval[par->partype[i]] = exp(x[i]);
+				break;
+			default:
+				par->rpval[par->partype[i]] = x[i];
+				break;
+			}
+		}
+		else{
+			par->rpval[par->partype[i]] = x[i];
+		}
+	}
+
+	return;
+}
+/*****************************************************************************/
+
+
+
+/**
+jacobian approximation by the finite difference method.
+*/
+void fd_jacobian(int m, int n, double *x, int k, double *fv, double **fjac,
+				 lmdatatype *data, void *par, int *iflag)
+{
+	int i;
+	double eps, h, xi;
+	double *fip1, *fim1;
+	modelparameters *mpar;
+
+	mpar = (modelparameters *)par;
+
+	if(mpar->jactype[k] != CENTRAL &&
+		mpar->jactype[k] != FORWARD &&
+		mpar->jactype[k] != BACKWARD){
+			printf("\n error on jactype values \n");
+			exit(EXIT_FAILURE);
+	}
+
+	eps = sqrt(sqrt(MACHEPS));
+	//eps = sqrt(MACHEPS);
+
+	xi = x[k];
+	if(xi == 0.0)
+		h = eps;
+	else
+		h = eps * fabs(xi);
+
+	if(mpar->jactype[k] == CENTRAL || mpar->jactype[k] == FORWARD){
+		if((fip1 = (double*)calloc(m, sizeof(double))) == NULL){
+			printf("\n memory allocation failure \n");
+			exit(EXIT_FAILURE);
+		}
+		x[k] = xi + h;
+		residual(m, n, x, fip1, data, par, iflag);
+	}
+	if(mpar->jactype[k] == CENTRAL || mpar->jactype[k] == BACKWARD){
+		if((fim1 = (double*)calloc(m, sizeof(double))) == NULL){
+			printf("\n memory allocation failure \n");
+			exit(EXIT_FAILURE);
+		}
+		x[k] = xi - h;
+		residual(m, n, x, fim1, data, par, iflag);
+	}
+
+	for(i = 0; i < m; i++){
+		switch(mpar->jactype[k]){
+		case CENTRAL :
+			fjac[k][i] = (fip1[i] - fim1[i]) / (2.0*h);
+			break;
+		case FORWARD :
+			fjac[k][i] = (fip1[i] -   fv[i]) / h;
+			break;
+		case BACKWARD :
+			fjac[k][i] = (fv[i]   - fim1[i]) / h;
+			break;
+		}
+	}
+
+	x[k] = xi;
+
+	if(mpar->jactype[k] == CENTRAL || mpar->jactype[k] == FORWARD){
+		free(fip1);
+	}
+	if(mpar->jactype[k] == CENTRAL || mpar->jactype[k] == BACKWARD){
+		free(fim1);
+	}
+
+	return;
+}
+/*****************************************************************************/
+
+
+
 /**
 levenberg-marquardt non-linear least squares fitting. driver for the lmder
 minpack function, with confidence intervals.
 */
 void lm_nlsf(void fcn(), lmdatatype *data, void *modelpar, int m, int n,
-	double *x, double *ci, double **corr, double *fvec, double **fjac,
-	double tol, int *info, int *nfev, int *njev, double *fnorm, int mode)
+			 double *x, double *ci, double **corr, double *fvec, double **fjac,
+			 double tol, int *info, int *nfev, int *njev, double *fnorm,
+			 int mode)
 {
-    int i,
+	int i,
 		j,
 		maxfev;
 
-    int *ipvt;
+	int *ipvt;
 
-    double
+	double
 		ftol,
 		xtol,
 		gtol,
@@ -1567,7 +1295,7 @@ void lm_nlsf(void fcn(), lmdatatype *data, void *modelpar, int m, int n,
 		covfac,
 		student05;
 
-    double
+	double
 		*diag,
 		*qtf,
 		*wa1,
@@ -1576,40 +1304,40 @@ void lm_nlsf(void fcn(), lmdatatype *data, void *modelpar, int m, int n,
 		*wa4;
 
 	/* Check input parameters */
-   if (n <= 0 || m < n || tol < 0.0) {
-        *info = 0;
-        return;
-   }
-   /* Allocate memory for working arrays. */
-   if( (ipvt = (int *)calloc(n, sizeof(int))) == NULL ||
-	   (diag = (double *)calloc(n, sizeof(double))) == NULL ||
-	   (qtf  = (double *)calloc(n, sizeof(double))) == NULL ||
-	   (wa1  = (double *)calloc(n, sizeof(double))) == NULL ||
-	   (wa2  = (double *)calloc(n, sizeof(double))) == NULL ||
-	   (wa3  = (double *)calloc(n, sizeof(double))) == NULL ||
-	   (wa4  = (double *)calloc(m, sizeof(double))) == NULL ){
-		   *info = 9;
-		   return;
-   }
+	if (n <= 0 || m < n || tol < 0.0) {
+		*info = 0;
+		return;
+	}
+	/* Allocate memory for working arrays. */
+	if( (ipvt = (int *)calloc(n, sizeof(int))) == NULL ||
+		(diag = (double *)calloc(n, sizeof(double))) == NULL ||
+		(qtf  = (double *)calloc(n, sizeof(double))) == NULL ||
+		(wa1  = (double *)calloc(n, sizeof(double))) == NULL ||
+		(wa2  = (double *)calloc(n, sizeof(double))) == NULL ||
+		(wa3  = (double *)calloc(n, sizeof(double))) == NULL ||
+		(wa4  = (double *)calloc(m, sizeof(double))) == NULL ){
+			*info = 9;
+			return;
+	}
 
-   /*  */
-   for(j = 0; j < n; j++){
+	/*  */
+	for(j = 0; j < n; j++){
 		diag[j] = 1.0;
-   }
+	}
 
 	/* Set convergence tolerances */
-    ftol = tol;
-    xtol = tol;
-    gtol = tol;
+	ftol = tol;
+	xtol = tol;
+	gtol = tol;
 
-    maxfev = (n + 2) * 100;
-    factor = 100.0;
-    *nfev  = 0;
+	maxfev = (n + 2) * 100;
+	factor = 100.0;
+	*nfev  = 0;
 	*njev  = 0;
 
 	/*************************************************************************/
-    lmder(fcn, data, modelpar, m, n, x, fvec, ftol, xtol, gtol, maxfev, diag,
-          mode, factor, info, nfev, njev, fjac, ipvt, qtf, wa1, wa2, wa3, wa4);
+	lmder(fcn, data, modelpar, m, n, x, fvec, ftol, xtol, gtol, maxfev, diag,
+		mode, factor, info, nfev, njev, fjac, ipvt, qtf, wa1, wa2, wa3, wa4);
 	/*************************************************************************/
 
 	student05 = gsl_cdf_tdist_Pinv(1.0 - 0.5/2.0, m - n);
@@ -1618,61 +1346,120 @@ void lm_nlsf(void fcn(), lmdatatype *data, void *modelpar, int m, int n,
 	covfac = norm*norm/(m - n);
 
 	*fnorm = norm;
-    for (i = 0; i < n; i++){
-        /* 95% confidence interval */
-        ci[i] = student05 * sqrt(covfac*fjac[i][i]);
+	for (i = 0; i < n; i++){
+		/* 95% confidence interval */
+		ci[i] = student05 * sqrt(covfac*fjac[i][i]);
 
-        /* correlation matrix */
-        for(j = 0; j < n; j++){
-            corr[i][j] = fjac[i][j] / sqrt(fjac[i][i] * fjac[j][j]);
-        }
-    }
+		/* correlation matrix */
+		for(j = 0; j < n; j++){
+			corr[i][j] = fjac[i][j] / sqrt(fjac[i][i] * fjac[j][j]);
+		}
+	}
 
-    free(wa4);
-    free(wa3);
-    free(wa2);
-    free(wa1);
-    free(qtf);
-    free(diag);
-    free(ipvt);
+	free(wa4);
+	free(wa3);
+	free(wa2);
+	free(wa1);
+	free(qtf);
+	free(diag);
+	free(ipvt);
 
 	return;
 }
 /*****************************************************************************/
 
 
+
+/**
+*/
+void print_par(FILE *file, double *x, double *ci, double **corr, int n,
+			   modelparameters *par)
+{
+	int i, j;
+
+	fprintf(file, "Parameters: \n");
+
+	for(i = 0; i < n; i++){
+		if(par->model == PWFT){ // for transformed parameters
+			switch(par->partype[i]){
+			case PERMEABILITY:
+			    fprintf(file, "%s \t = % 12g\n", par->parnames[par->partype[i]], par->rpval[par->partype[i]]);
+				fprintf(file, "ln(k) \t = % 12g +/- %12g ", x[i], ci[i]);
+				fprintf(file, x[i] == 0.0 ? "\n" : "or +/- %4g%%\n" , ci[i]*100.0/fabs(x[i]));
+				break;
+            case SKIN_FACTOR:
+				fprintf(file, "%s \t = % 12g\n", par->parnames[par->partype[i]], par->rpval[par->partype[i]]);
+				fprintf(file, "ln(S*) \t = % 12g +/- %12g ", x[i], ci[i]);
+				fprintf(file, x[i] == 0.0 ? "\n" : "or +/- %4g%%\n" , ci[i]*100.0/fabs(x[i]));
+				break;
+			case WELLBORE_STORAGE:
+                fprintf(file, "%s \t = % 12g\n", par->parnames[par->partype[i]], par->rpval[par->partype[i]]);
+				fprintf(file, "ln(C) \t = % 12g +/- %12g ", x[i], ci[i]);
+				fprintf(file, x[i] == 0.0 ? "\n" : "or +/- %4g%%\n" , ci[i]*100.0/fabs(x[i]));
+				break;
+			case INITIAL_PRESSURE:
+				fprintf(file, "%s \t = % 12g\n", par->parnames[par->partype[i]], par->rpval[par->partype[i]]);
+				fprintf(file, "ln(pi) \t = % 12g +/- %12g ", x[i], ci[i]);
+				fprintf(file, x[i] == 0.0 ? "\n" : "or +/- %4g%%\n" , ci[i]*100.0/fabs(x[i]));
+				break;
+			default:
+			    fprintf(file, "%s \t = % 12g +/- %12g ", par->parnames[par->partype[i]], x[i], ci[i]);
+			    fprintf(file, x[i] == 0.0 ? "\n" : "or +/- %4g%%\n" , ci[i]*100.0/fabs(x[i]));
+			    break;
+			}
+		}
+		else{
+			fprintf(file, "%s \t = % 12g +/- %12g ", par->parnames[par->partype[i]], x[i], ci[i]);
+			fprintf(file, x[i] == 0.0 ? "\n" : "or +/- %4g%%\n" , ci[i]*100.0/fabs(x[i]));
+		}
+	}
+
+	fprintf(file, "Correlation matrix: \n");
+	for(i = 0; i < n; i++){
+		for(j = 0; j < n; j++){
+			fprintf(file, "% .4E    ", corr[i][j]);
+		}
+		fprintf(file, "\n");
+	}
+
+	return;
+}
+/*****************************************************************************/
+
+
+
 /**
 */
 void write_outfile(modelparameters *par, lmdatatype *data, double *x,
-                   double *ci, double **corr)
+				   double *ci, double **corr)
 {
-    int     j, n, m;
-    FILE*   outfile;
+	int     j, n, m;
+	FILE*   outfile;
 
-    n = par->n;
-    m = par->m;
+	n = par->n;
+	m = par->m;
 
-    outfile = fopen(par->outfile, "w");
-    if (outfile == NULL){
-        printf("\n cannot open out file: \n");
+	outfile = fopen(par->outfile, "w");
+	if (outfile == NULL){
+		printf("\n cannot open out file: \n");
 		exit(EXIT_FAILURE);
-    }
+	}
 
-    print_par(outfile, x, ci, corr, n, par);
+	print_par(outfile, x, ci, corr, n, par);
 
-    fprintf(outfile, "Model (t, p, dt, dte, dp, derlog): \n");
-    for (j = 0; j < m; j++){
-            fprintf(outfile, "%12g %12g %12g %12g %12g %12g \n",
-                    data->t[j],
-                    data->p[j],
-                    data->dt[j],
-                    data->dte[j],
-                    data->dp[j],
-                    data->derl[j]);
-    }
+	fprintf(outfile, "Model (t, p, dt, dte, dp, derlog): \n");
+	for (j = 0; j < m; j++){
+		fprintf(outfile, "%12g %12g %12g %12g %12g %12g \n",
+			data->t[j],
+			data->p[j],
+			data->dt[j],
+			data->dte[j],
+			data->dp[j],
+			data->derl[j]);
+	}
 
-    fclose(outfile);
+	fclose(outfile);
 
-    return;
+	return;
 }
 /*****************************************************************************/

@@ -31,7 +31,10 @@ algorithm
 */
 double ddpwft_dk(const modelparameters *p, double t)
 {
-    return p->k * ddpwf_dk(p, t);
+    double k;
+    k = p->rpval[PERMEABILITY];
+
+    return k * ddpwf_dk(p, t);
 }
 /*****************************************************************************/
 
@@ -43,7 +46,10 @@ algorithm
 */
 double ddpwft_dC(const modelparameters *p, double t)
 {
-    return p->C * ddpwf_dC(p, t);
+    double C;
+    C = p->rpval[WELLBORE_STORAGE];
+
+    return C * ddpwf_dC(p, t);
 }
 /*****************************************************************************/
 
@@ -55,7 +61,10 @@ algorithm
 */
 double ddpwft_dS(const modelparameters *p, double t)
 {
-    return -(1.0/33.0) * (p->S - 25.0) * (8.0 + p->S) * ddpwf_dS(p, t);
+    double S;
+    S = p->rpval[SKIN_FACTOR];
+
+    return -(1.0/33.0) * (S - 25.0) * (8.0 + S) * ddpwf_dS(p, t);
 }
 /*****************************************************************************/
 
@@ -65,6 +74,9 @@ double ddpwft_dS(const modelparameters *p, double t)
 */
 double drt_dpi(const modelparameters *p, double t)
 {
-    return -( p->pi );
+    double pi;
+    pi = p->rpval[INITIAL_PRESSURE];
+
+    return -( pi );
 }
 /*****************************************************************************/

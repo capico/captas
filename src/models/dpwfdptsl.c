@@ -63,12 +63,10 @@ double dpwfdptsl(const modelparameters *p, double t)
 {
     double f;
 
-    if(t == 0.0)
-    {
+    if(t == 0.0) {
         f = 0.0;
     }
-    else
-    {
+    else {
         f = stehfest_ilt(&dpwfdpbar, p, p->nstehfest, p->v, t);
     }
 
@@ -86,12 +84,10 @@ double ddpwfdptsl_dC(const modelparameters *p, double t)
 {
     double f;
 
-    if(t == 0.0)
-    {
+    if(t == 0.0) {
         f = 0.0;
     }
-    else
-    {
+    else {
         f = stehfest_ilt(&ddpwfdptsl_dCbar, p, p->nstehfest, p->v, t);
     }
 

@@ -28,21 +28,30 @@
 double dpwfrectbar(const void *parameters, double u)
 {
     double a, b, c, CD, rws, numer, denom, aux0;
+    double k, S, C, w1x, w2x, w1y, w2y;
     double epsilon = DBL_EPSILON;
     double sum, deltax, deltay, deltaxy;
     double we, ww, ws, wn, wse_sq, wne_sq, wsw_sq, wnw_sq;
-    int i, j, k, l, nloop1, nloop2;
+    int i, j, m, l, nloop1, nloop2;
     modelparameters *p;
 
     p = (modelparameters *)parameters;
 
     gsl_set_error_handler_off();
 
-    rws = p->rw*exp(-p->S);
-    a   = (p->qB * p->mu * p->C2) / (p->h * p->k);
-    b   = (p->phi * p->mu * p->ct * rws * rws) / (p->k * p->C1);
-    c   = (p->phi * p->mu * p->ct) / (p->k * p->C1);
-    CD  = (p->C * p->C3) / (p->phi * p->h  * p->ct * rws * rws);
+    k   = p->rpval[PERMEABILITY];
+    S   = p->rpval[SKIN_FACTOR];
+    C   = p->rpval[WELLBORE_STORAGE];
+    w1x = p->rpval[DISTANCE_TO_FAULT_1_X];
+    w2x = p->rpval[DISTANCE_TO_FAULT_2_X];
+    w1y = p->rpval[DISTANCE_TO_FAULT_1_Y];
+    w2y = p->rpval[DISTANCE_TO_FAULT_2_Y];
+
+    rws = p->rw*exp(-S);
+    a   = (p->qB * p->mu * p->C2) / (p->h * k);
+    b   = (p->phi * p->mu * p->ct * rws * rws) / (k * p->C1);
+    c   = (p->phi * p->mu * p->ct) / (k * p->C1);
+    CD  = (C * p->C3) / (p->phi * p->h  * p->ct * rws * rws);
 
     aux0  = (u*b);
     numer = gsl_sf_bessel_K0(sqrt(aux0));
@@ -52,12 +61,11 @@ double dpwfrectbar(const void *parameters, double u)
     i = 1;
     j = 0;
     nloop1 = 0;
-    do
-    {
-        we = 2.0*(p->w1x*i + p->w2x*j);
-        ww = 2.0*(p->w1x*j + p->w2x*i);
-        ws = 2.0*(p->w1y*i + p->w2y*j);
-        wn = 2.0*(p->w1y*j + p->w2y*i);
+    do {
+        we = 2.0*(w1x*i + w2x*j);
+        ww = 2.0*(w1x*j + w2x*i);
+        ws = 2.0*(w1y*i + w2y*j);
+        wn = 2.0*(w1y*j + w2y*i);
 
         deltax = gsl_sf_bessel_K0(we * sqrt(u*c))
                  + gsl_sf_bessel_K0(ww * sqrt(u*c));
@@ -67,13 +75,12 @@ double dpwfrectbar(const void *parameters, double u)
 
         sum += (deltax + deltay);
 
-        k = 1;
+        m = 1;
         l = 0;
         nloop2  = 0;
-        do
-        {
-            ws = 2.0*(p->w1y*k + p->w2y*l);
-            wn = 2.0*(p->w1y*l + p->w2y*k);
+        do {
+            ws = 2.0*(w1y*m + w2y*l);
+            wn = 2.0*(w1y*l + w2y*m);
 
             wse_sq = we*we + ws*ws;
             wne_sq = we*we + wn*wn;
@@ -87,30 +94,24 @@ double dpwfrectbar(const void *parameters, double u)
 
             sum += deltaxy;
 
-            if(nloop2%2 == 0)
-            {
+            if(nloop2%2 == 0) {
                 l++;
             }
-            else
-            {
-                k++;
+            else {
+                m++;
             }
             nloop2++;
-        }
-        while(fabs(deltaxy) > epsilon);
+        } while(fabs(deltaxy) > epsilon);
 
 
-        if(nloop1%2 == 0)
-        {
+        if(nloop1%2 == 0) {
             j++;
         }
-        else
-        {
+        else {
             i++;
         }
         nloop1++;
-    }
-    while(fabs(deltax) > epsilon ||
+    } while(fabs(deltax) > epsilon ||
             fabs(deltay) > epsilon);
 
     numer += sum;
@@ -130,12 +131,10 @@ double dpwfrect(const modelparameters *p, double t)
 {
     double f;
 
-    if(t == 0.0)
-    {
+    if(t == 0.0) {
         f = 0.0;
     }
-    else
-    {
+    else {
         f = stehfest_ilt(&dpwfrectbar, p, p->nstehfest, p->v, t);
     }
 

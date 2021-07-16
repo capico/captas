@@ -28,23 +28,28 @@
 */
 double dpwfbar(const void *parameters, double u)
 {
-    double rws, a, b, CD, aux1, aux2, aux3;
-    modelparameters *p;
+	double k, S, C, rws, a, b, CD, uD, uDsqrt, f;
+	modelparameters *p;
 
-    p = (modelparameters *)parameters;
+	p = (modelparameters *)parameters;
 
-    gsl_set_error_handler_off();
+	gsl_set_error_handler_off();
 
-    rws = p->rw*exp(-p->S);
-    a   = (p->qB * p->mu * p->C2)/ (p->h * p->k);
-    b   = (p->phi * p->mu * p->ct * rws * rws) / (p->k * p->C1);
-    CD  = (p->C * p->C3) / (p->phi * p->h  * p->ct * rws * rws);
+	k   = p->rpval[PERMEABILITY];
+	S   = p->rpval[SKIN_FACTOR];
+	C   = p->rpval[WELLBORE_STORAGE];
 
-    aux1  = sqrt(u * b);
-    aux2  = gsl_sf_bessel_K0(aux1);
-    aux3  = aux1 * gsl_sf_bessel_K1(aux1);
+	rws = p->rw*exp(-S);
+	a   = (p->qB * p->mu * p->C2)/ (p->h * k);
+	b   = (p->phi * p->mu * p->ct * rws * rws) / (k * p->C1);
+	CD  = (C * p->C3) / (p->phi * p->h  * p->ct * rws * rws);
+	uD  = (u * b);
 
-    return a*b*aux2 / (CD*u*u*b*b*aux2 +  u*b*aux3);
+	uDsqrt = sqrt(uD);
+	f      = gsl_sf_bessel_K0(uDsqrt);
+	f     /= uD * uDsqrt * gsl_sf_bessel_K1(uDsqrt);
+
+	return a * b * f / (1.0 + CD * uD * uD * f);
 }
 /*****************************************************************************/
 
@@ -54,57 +59,33 @@ d(dpwf)/dk function in the Laplace space
 */
 double ddpwf_dkbar(const void *parameters, double u)
 {
-    double rws, a, b, y, CD, aux1, aux2, aux3, aux4;
+	double k, S, C, rws, a, b, y, CD, uD, uDsqrt, aux1, aux2, aux3, aux4;
 
-    modelparameters *p;
+	modelparameters *p;
 
-    p = (modelparameters *)parameters;
+	p = (modelparameters *)parameters;
 
-    gsl_set_error_handler_off();
+	gsl_set_error_handler_off();
 
-    rws = p->rw*exp(-p->S);
-    a   = (p->qB * p->mu * p->C2) / (p->h * p->k);
-    y   = (p->phi * p->mu * p->ct * rws * rws)/(p->C1);
-    b   = y / p->k;
-    CD  = (p->C * p->C3) / (p->phi * p->h  * p->ct * rws * rws);
+	k   = p->rpval[PERMEABILITY];
+	S   = p->rpval[SKIN_FACTOR];
+	C   = p->rpval[WELLBORE_STORAGE];
 
-    aux1  = sqrt(u * b);
-    aux2  = gsl_sf_bessel_K0(aux1);
-    aux3  = aux1 * gsl_sf_bessel_K1(aux1);
-    aux4  = (CD * u * b * aux2 + aux3);
-    aux4  = aux4 * aux4;
+	rws = p->rw*exp(-S);
+	a   = (p->qB * p->mu * p->C2) / (p->h * k);
+	y   = (p->phi * p->mu * p->ct * rws * rws)/(p->C1);
+	b   = y / k;
+	CD  = (C * p->C3) / (p->phi * p->h  * p->ct * rws * rws);
+	uD  = (u * b);
 
-    return (-a/(2.0*u*p->k*aux4)) * (u*b*aux2*aux2 + 2.0*aux2*aux3 - aux3*aux3);
+	uDsqrt = sqrt(uD);
+	aux2   = gsl_sf_bessel_K0(uDsqrt);
+	aux3   = uDsqrt * gsl_sf_bessel_K1(uDsqrt);
+	aux4   = (CD * u * b * aux2 + aux3);
+	aux4   = aux4 * aux4;
+
+	return (-a/(2.0*u* k *aux4)) * (u*b*aux2*aux2 + 2.0*aux2*aux3 - aux3*aux3);
 }
-/*****************************************************************************/
-
-
-/**
-d(dpwf)/dC function in the Laplace space
-*/
-//double ddpwf_dCbar(const void *parameters, double u)
-//{
-//    double rws, a, b, z, CD, aux1, aux2, aux3, aux4;
-//    modelparameters *p;
-//
-//	p = (modelparameters *)parameters;
-//
-//	gsl_set_error_handler_off();
-//
-//	rws = p->rw*exp(-p->S);
-//	a   = (p->qB * p->mu * p->C2) / (p->h * p->k);
-//	b   = (p->phi * p->mu * p->ct * rws * rws)/(p->k * p->C1);
-//	z   = (p->C3)        / (p->phi * p->h  * p->ct * rws * rws);
-//	CD  = p->C * z;
-//
-//	aux1  = sqrt(u * b);
-//	aux2  = gsl_sf_bessel_K0(aux1);
-//	aux3  = aux1 * gsl_sf_bessel_K1(aux1);
-//	aux4  = CD * u * b * aux2 + aux3;
-//	aux4  = aux4 * aux4;
-//
-//	return - a * b * z * aux2 * aux2 / aux4;
-//}
 /*****************************************************************************/
 
 
@@ -113,26 +94,31 @@ d(dpwf)/dS function in the Laplace space
 */
 double ddpwf_dSbar(const void *parameters, double u)
 {
-    double rws, a, b, y, z, aux1, aux2, aux3, aux4;
-    modelparameters *p;
+	double k, S, C, rws, uD, uDsqrt, a, b, y, z, aux1, aux2, aux3, aux4;
+	modelparameters *p;
 
-    p = (modelparameters *)parameters;
+	p = (modelparameters *)parameters;
 
-    gsl_set_error_handler_off();
+	gsl_set_error_handler_off();
 
-    rws = p->rw*exp(-p->S);
-    a   = (p->qB * p->mu * p->C2) / (p->h * p->k);
-    y   = (p->phi * p->mu * p->ct * p->rw * p->rw) / (p->k * p->C1);
-    b   = (p->phi * p->mu * p->ct * rws * rws)     / (p->k * p->C1);
-    z   = (p->C * p->C3) / (p->phi * p->h  * p->ct * p->rw * p->rw);
+	k   = p->rpval[PERMEABILITY];
+	S   = p->rpval[SKIN_FACTOR];
+	C   = p->rpval[WELLBORE_STORAGE];
 
-    aux1  = sqrt(u * b);
-    aux2  = gsl_sf_bessel_K0(aux1);
-    aux3  = gsl_sf_bessel_K1(aux1);
-    aux4  = u * y * z * aux2 + aux1 * aux3;
-    aux4  = aux4 * aux4;
+	rws = p->rw*exp(-S);
+	a   = (p->qB * p->mu * p->C2) / (p->h * k);
+	y   = (p->phi * p->mu * p->ct * p->rw * p->rw) / (k * p->C1);
+	b   = (p->phi * p->mu * p->ct *   rws *   rws) / (k * p->C1);
+	z   = (C * p->C3) / (p->phi * p->h  * p->ct * p->rw * p->rw);
+	uD  = (u * b);
 
-    return a * b * (aux3*aux3 - aux2*aux2) / aux4;
+	uDsqrt = sqrt(uD);
+	aux2   = gsl_sf_bessel_K0(uDsqrt);
+	aux3   = gsl_sf_bessel_K1(uDsqrt);
+	aux4   = u * y * z * aux2 + uDsqrt * aux3;
+	aux4   = aux4 * aux4;
+
+	return a * b * (aux3*aux3 - aux2*aux2) / aux4;
 }
 /*****************************************************************************/
 
@@ -142,18 +128,18 @@ d(dpwf)/dC function in the Laplace space
 */
 double ddpwf_dCbar(const void *parameters, double u)
 {
-    double bc_a, dpwfb;
-    modelparameters *p;
+	double bc_a, dpwfb;
+	modelparameters *p;
 
-    p = (modelparameters *)parameters;
+	p = (modelparameters *)parameters;
 
-    gsl_set_error_handler_off();
+	gsl_set_error_handler_off();
 
-    bc_a  = (p->C3) / (p->C1 * p->C2 * p->qB);
+	bc_a  = (p->C3) / (p->C1 * p->C2 * p->qB);
 
-    dpwfb = dpwfbar(p, u);
+	dpwfb = dpwfbar(p, u);
 
-    return -bc_a * u * u * (dpwfb * dpwfb);
+	return -bc_a * u * u * (dpwfb * dpwfb);
 }
 /*****************************************************************************/
 
@@ -165,18 +151,16 @@ double ddpwf_dCbar(const void *parameters, double u)
 */
 double dpwf(const modelparameters *p, double t)
 {
-    double f;
+	double f;
 
-    if(t == 0.0)
-    {
-        f = 0.0;
-    }
-    else
-    {
-        f = stehfest_ilt(&dpwfbar, p, p->nstehfest, p->v, t);
-    }
+	if(t == 0.0){
+		f = 0.0;
+	}
+	else{
+		f = stehfest_ilt(&dpwfbar, p, p->nstehfest, p->v, t);
+	}
 
-    return f;
+	return f;
 }
 /*****************************************************************************/
 
@@ -188,18 +172,16 @@ algorithm
 */
 double ddpwf_dk(const modelparameters *p, double t)
 {
-    double f;
+	double f;
 
-    if(t == 0.0)
-    {
-        f = 0.0;
-    }
-    else
-    {
-        f = stehfest_ilt(&ddpwf_dkbar, p, p->nstehfest, p->v, t);
-    }
+	if(t == 0.0){
+		f = 0.0;
+	}
+	else{
+		f = stehfest_ilt(&ddpwf_dkbar, p, p->nstehfest, p->v, t);
+	}
 
-    return f;
+	return f;
 }
 /*****************************************************************************/
 
@@ -211,18 +193,16 @@ algorithm
 */
 double ddpwf_dC(const modelparameters *p, double t)
 {
-    double f;
+	double f;
 
-    if(t == 0.0)
-    {
-        f = 0.0;
-    }
-    else
-    {
-        f = stehfest_ilt(&ddpwf_dCbar, p, p->nstehfest, p->v, t);
-    }
+	if(t == 0.0){
+		f = 0.0;
+	}
+	else{
+		f = stehfest_ilt(&ddpwf_dCbar, p, p->nstehfest, p->v, t);
+	}
 
-    return f;
+	return f;
 }
 /*****************************************************************************/
 
@@ -234,18 +214,16 @@ algorithm
 */
 double ddpwf_dS(const modelparameters *p, double t)
 {
-    double f;
+	double f;
 
-    if(t == 0.0)
-    {
-        f = 0.0;
-    }
-    else
-    {
-        f = stehfest_ilt(&ddpwf_dSbar, p, p->nstehfest, p->v, t);
-    }
+	if(t == 0.0){
+		f = 0.0;
+	}
+	else{
+		f = stehfest_ilt(&ddpwf_dSbar, p, p->nstehfest, p->v, t);
+	}
 
-    return f;
+	return f;
 }
 /*****************************************************************************/
 
@@ -255,6 +233,6 @@ double ddpwf_dS(const modelparameters *p, double t)
 */
 double dr_dpi(const modelparameters *p, double t)
 {
-    return -1.0;
+	return -1.0;
 }
 /*****************************************************************************/

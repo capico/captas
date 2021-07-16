@@ -18,7 +18,7 @@
 
 
 /**
-* interporosity flow function
+* interporosity flow function, pseudo steady state
 */
 double fpss(const double uD, const double omega, const double lambdas)
 {
@@ -62,12 +62,10 @@ double dpwfdppss(const modelparameters *p, double t)
 {
     double f;
 
-    if(t == 0.0)
-    {
+    if(t == 0.0) {
         f = 0.0;
     }
-    else
-    {
+    else {
         f = stehfest_ilt(&dpwfdpbar, p, p->nstehfest, p->v, t);
     }
 
@@ -85,12 +83,10 @@ double ddpwfdppss_dC(const modelparameters *p, double t)
 {
     double f;
 
-    if(t == 0.0)
-    {
+    if(t == 0.0) {
         f = 0.0;
     }
-    else
-    {
+    else {
         f = stehfest_ilt(&ddpwfdppss_dCbar, p, p->nstehfest, p->v, t);
     }
 

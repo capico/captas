@@ -25,6 +25,7 @@ double dpwfnfobbar(const void *parameters, double u)
 {
     double aux0, aux1, aux2;
     double alpha, zeta, gamma;
+    double k, S, C, re;
     double denom, numer, a, b, CD, rws, z;
     modelparameters *p;
 
@@ -32,15 +33,20 @@ double dpwfnfobbar(const void *parameters, double u)
 
     gsl_set_error_handler_off();
 
-    rws = p->rw*exp(-p->S);
-    a   = (p->qB * p->mu * p->C2) / (p->h * p->k);
-    b   = (p->phi * p->mu * p->ct * rws * rws) / (p->k * p->C1);
-    z   = (p->phi * p->mu * p->ct)             / (p->k * p->C1);
-    CD  = (p->C * p->C3) / (p->phi * p->h  * p->ct * rws * rws);
+    k   = p->rpval[PERMEABILITY];
+	S   = p->rpval[SKIN_FACTOR];
+	C   = p->rpval[WELLBORE_STORAGE];
+	re  = p->rpval[EXTERNAL_RADIUS];
+
+    rws = p->rw*exp(-S);
+    a   = (p->qB * p->mu * p->C2) / (p->h * k);
+    b   = (p->phi * p->mu * p->ct * rws * rws) / (k * p->C1);
+    z   = (p->phi * p->mu * p->ct)             / (k * p->C1);
+    CD  = (C * p->C3) / (p->phi * p->h  * p->ct * rws * rws);
 
     aux0  = (u * b);
     aux1  = sqrt(aux0);
-    aux2  = p->re * sqrt(u * z);
+    aux2  = re * sqrt(u * z);
 
     alpha  = gsl_sf_bessel_K0(aux1)/(aux0*aux1*gsl_sf_bessel_K1(aux1));
     zeta   = gsl_sf_bessel_I0(aux1)/(aux0*aux1*gsl_sf_bessel_I1(aux1));
@@ -83,6 +89,7 @@ double ddpwfnfob_dSbar(const void *parameters, double u)
 {
     double aux0, aux1, aux2;
     double alpha, zeta, gamma;
+    double k, S, C, re;
     double denom, denom_sqr, numer, a, b, CD, rws, z;
     modelparameters *p;
 
@@ -90,15 +97,20 @@ double ddpwfnfob_dSbar(const void *parameters, double u)
 
     gsl_set_error_handler_off();
 
-    rws = p->rw*exp(-p->S);
-    a   = (p->qB * p->mu * p->C2) / (p->h * p->k);
-    b   = (p->phi * p->mu * p->ct * rws * rws) / (p->k * p->C1);
-    z   = (p->phi * p->mu * p->ct)             / (p->k * p->C1);
-    CD  = (p->C * p->C3) / (p->phi * p->h  * p->ct * rws * rws);
+    k   = p->rpval[PERMEABILITY];
+	S   = p->rpval[SKIN_FACTOR];
+	C   = p->rpval[WELLBORE_STORAGE];
+	re  = p->rpval[EXTERNAL_RADIUS];
+
+    rws = p->rw*exp(-S);
+    a   = (p->qB * p->mu * p->C2) / (p->h * k);
+    b   = (p->phi * p->mu * p->ct * rws * rws) / (k * p->C1);
+    z   = (p->phi * p->mu * p->ct)             / (k * p->C1);
+    CD  = (C * p->C3) / (p->phi * p->h  * p->ct * rws * rws);
 
     aux0  = (u * b);
     aux1  = sqrt(aux0);
-    aux2  = p->re * sqrt(u * z);
+    aux2  = re * sqrt(u * z);
 
     alpha  = gsl_sf_bessel_K0(aux1)/(aux0*aux1*gsl_sf_bessel_K1(aux1));
     zeta   = gsl_sf_bessel_I0(aux1)/(aux0*aux1*gsl_sf_bessel_I1(aux1));
@@ -122,6 +134,7 @@ double ddpwfnfob_drebar(const void *parameters, double u)
 {
     double aux0, aux1, aux2, aux3;
     double alpha, zeta, gamma;
+    double k, S, C, re;
     double denom, denom_sqr, numer, a, b, CD, rws, z;
     modelparameters *p;
 
@@ -129,15 +142,20 @@ double ddpwfnfob_drebar(const void *parameters, double u)
 
     gsl_set_error_handler_off();
 
-    rws = p->rw*exp(-p->S);
-    a   = (p->qB * p->mu * p->C2) / (p->h * p->k);
-    b   = (p->phi * p->mu * p->ct * rws * rws) / (p->k * p->C1);
-    z   = (p->phi * p->mu * p->ct)             / (p->k * p->C1);
-    CD  = (p->C * p->C3) / (p->phi * p->h  * p->ct * rws * rws);
+    k   = p->rpval[PERMEABILITY];
+	S   = p->rpval[SKIN_FACTOR];
+	C   = p->rpval[WELLBORE_STORAGE];
+	re  = p->rpval[EXTERNAL_RADIUS];
+
+    rws = p->rw*exp(-S);
+    a   = (p->qB * p->mu * p->C2) / (p->h * k);
+    b   = (p->phi * p->mu * p->ct * rws * rws) / (k * p->C1);
+    z   = (p->phi * p->mu * p->ct)             / (k * p->C1);
+    CD  = (C * p->C3) / (p->phi * p->h  * p->ct * rws * rws);
 
     aux0  = (u * b);
     aux1  = sqrt(aux0);
-    aux2  = p->re * sqrt(u * z);
+    aux2  = re * sqrt(u * z);
 
     alpha  = gsl_sf_bessel_K0(aux1)/(aux0*aux1*gsl_sf_bessel_K1(aux1));
     zeta   = gsl_sf_bessel_I0(aux1)/(aux0*aux1*gsl_sf_bessel_I1(aux1));
@@ -153,7 +171,7 @@ double ddpwfnfob_drebar(const void *parameters, double u)
 
     denom_sqr = denom * denom;
 
-    return -(a * b) / (aux3 * p->re * aux0 * aux0 * denom_sqr);
+    return -(a * b) / (aux3 * re * aux0 * aux0 * denom_sqr);
 }
 /*****************************************************************************/
 
@@ -165,6 +183,7 @@ double ddpwfnfob_dkbar(const void *parameters, double u)
 {
     double aux0, aux1, aux2, aux3;
     double alpha, zeta, gamma;
+    double k, S, C, re;
     double denom, denom_sqr, numer, a, b, CD, rws, z;
     modelparameters *p;
 
@@ -172,15 +191,20 @@ double ddpwfnfob_dkbar(const void *parameters, double u)
 
     gsl_set_error_handler_off();
 
-    rws = p->rw*exp(-p->S);
-    a   = (p->qB * p->mu * p->C2) / (p->h * p->k);
-    b   = (p->phi * p->mu * p->ct * rws * rws) / (p->k * p->C1);
-    z   = (p->phi * p->mu * p->ct)             / (p->k * p->C1);
-    CD  = (p->C * p->C3) / (p->phi * p->h  * p->ct * rws * rws);
+    k   = p->rpval[PERMEABILITY];
+	S   = p->rpval[SKIN_FACTOR];
+	C   = p->rpval[WELLBORE_STORAGE];
+	re  = p->rpval[EXTERNAL_RADIUS];
+
+    rws = p->rw*exp(-S);
+    a   = (p->qB * p->mu * p->C2) / (p->h * k);
+    b   = (p->phi * p->mu * p->ct * rws * rws) / (k * p->C1);
+    z   = (p->phi * p->mu * p->ct)             / (k * p->C1);
+    CD  = (C * p->C3) / (p->phi * p->h  * p->ct * rws * rws);
 
     aux0  = (u * b);
     aux1  = sqrt(aux0);
-    aux2  = p->re * sqrt(u * z);
+    aux2  = re * sqrt(u * z);
 
     alpha  = gsl_sf_bessel_K0(aux1)/(aux0*aux1*gsl_sf_bessel_K1(aux1));
     zeta   = gsl_sf_bessel_I0(aux1)/(aux0*aux1*gsl_sf_bessel_I1(aux1));
@@ -196,9 +220,9 @@ double ddpwfnfob_dkbar(const void *parameters, double u)
 
     denom_sqr = denom * denom;
 
-    return ( -(a * b/p->k)*numer + a/(u*p->k)
-             - (a*b*aux0*aux0/(2.0*p->k))*numer*numer
-             + a*b/(2*p->k*aux0*aux0*aux3) ) / denom_sqr;
+    return ( -(a * b/k)*numer + a/(u*k)
+             - (a*b*aux0*aux0/(2.0*k))*numer*numer
+             + a*b/(2.0*k*aux0*aux0*aux3) ) / denom_sqr;
 }
 /*****************************************************************************/
 
@@ -211,12 +235,10 @@ double dpwfnfob(const modelparameters *p, double t)
 {
     double f;
 
-    if(t == 0.0)
-    {
+    if(t == 0.0) {
         f = 0.0;
     }
-    else
-    {
+    else {
         f = stehfest_ilt(&dpwfnfobbar, p, p->nstehfest, p->v, t);
     }
 
@@ -233,12 +255,10 @@ double ddpwfnfob_dC(const modelparameters *p, double t)
 {
     double f;
 
-    if(t == 0.0)
-    {
+    if(t == 0.0) {
         f = 0.0;
     }
-    else
-    {
+    else {
         f = stehfest_ilt(&ddpwfnfob_dCbar, p, p->nstehfest, p->v, t);
     }
 
@@ -255,12 +275,10 @@ double ddpwfnfob_dS(const modelparameters *p, double t)
 {
     double f;
 
-    if(t == 0.0)
-    {
+    if(t == 0.0) {
         f = 0.0;
     }
-    else
-    {
+    else {
         f = stehfest_ilt(&ddpwfnfob_dSbar, p, p->nstehfest, p->v, t);
     }
 
@@ -277,12 +295,10 @@ double ddpwfnfob_dre(const modelparameters *p, double t)
 {
     double f;
 
-    if(t == 0.0)
-    {
+    if(t == 0.0) {
         f = 0.0;
     }
-    else
-    {
+    else {
         f = stehfest_ilt(&ddpwfnfob_drebar, p, p->nstehfest, p->v, t);
     }
 
@@ -299,12 +315,10 @@ double ddpwfnfob_dk(const modelparameters *p, double t)
 {
     double f;
 
-    if(t == 0.0)
-    {
+    if(t == 0.0) {
         f = 0.0;
     }
-    else
-    {
+    else {
         f = stehfest_ilt(&ddpwfnfob_dkbar, p, p->nstehfest, p->v, t);
     }
 

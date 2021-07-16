@@ -30,6 +30,7 @@
 double dpwfcbar(const void *parameters, double u)
 {
     double a, b, CD, rws, z, numer, denom, aux0, aux1, aux2;
+    double k, S, C, w1, w2;
     double epsilon = DBL_EPSILON;
     double sum = 0.0, delta = 1.0, wn, ws;
     int j = 0, i = 1, nloop = 0;
@@ -39,11 +40,17 @@ double dpwfcbar(const void *parameters, double u)
 
     gsl_set_error_handler_off();
 
-    rws = p->rw*exp(-p->S);
-    a   = (p->qB * p->mu * p->C2) / (p->h * p->k);
-    b   = (p->phi * p->mu * p->ct * rws * rws) / (p->k * p->C1);
-    z   = (p->phi * p->mu * p->ct)             / (p->k * p->C1);
-    CD  = (p->C * p->C3) / (p->phi * p->h  * p->ct * rws * rws);
+    k   = p->rpval[PERMEABILITY];
+    S   = p->rpval[SKIN_FACTOR];
+    C   = p->rpval[WELLBORE_STORAGE];
+    w1  = p->rpval[DISTANCE_TO_FAULT_1];
+    w2  = p->rpval[DISTANCE_TO_FAULT_2];
+
+    rws = p->rw*exp(-S);
+    a   = (p->qB * p->mu * p->C2) / (p->h * k);
+    b   = (p->phi * p->mu * p->ct * rws * rws) / (k * p->C1);
+    z   = (p->phi * p->mu * p->ct)             / (k * p->C1);
+    CD  = (C * p->C3) / (p->phi * p->h  * p->ct * rws * rws);
 
     aux0  = u*b;
     aux1  = sqrt(aux0);
@@ -51,22 +58,19 @@ double dpwfcbar(const void *parameters, double u)
 
     numer = gsl_sf_bessel_K0(aux1);
 
-    while(fabs(delta) > epsilon)
-    {
-        wn = 2.0*(p->w1*i + p->w2*j);
-        ws = 2.0*(p->w1*j + p->w2*i);
+    while(fabs(delta) > epsilon) {
+        wn = 2.0*(w1*i + w2*j);
+        ws = 2.0*(w1*j + w2*i);
 
         delta = gsl_sf_bessel_K0(wn * aux2)
                 + gsl_sf_bessel_K0(ws * aux2);
 
         sum += delta;
 
-        if(nloop%2 == 0)
-        {
+        if(nloop%2 == 0) {
             j++;
         }
-        else
-        {
+        else {
             i++;
         }
 
@@ -90,6 +94,7 @@ d(dpwf)/dk function in the Laplace space
 double ddpwfc_dkbar(const void *parameters, double u)
 {
     double a, b, CD, rws, z, numer, denom, aux0, aux1, aux2;
+    double k, S, C, w1, w2;
     double epsilon = DBL_EPSILON;
     double sum = 0.0, delta = 1.0, sum1 = 0.0, delta1 = 1.0, wn, ws;
     int j = 0, i = 1, nloop = 0;
@@ -99,21 +104,26 @@ double ddpwfc_dkbar(const void *parameters, double u)
 
     gsl_set_error_handler_off();
 
-    rws = p->rw*exp(-p->S);
-    a   = (p->qB * p->mu * p->C2) / (p->h * p->k);
-    b   = (p->phi * p->mu * p->ct * rws * rws) / (p->k * p->C1);
-    z   = (p->phi * p->mu * p->ct)             / (p->k * p->C1);
-    CD  = (p->C * p->C3) / (p->phi * p->h  * p->ct * rws * rws);
+    k   = p->rpval[PERMEABILITY];
+    S   = p->rpval[SKIN_FACTOR];
+    C   = p->rpval[WELLBORE_STORAGE];
+    w1  = p->rpval[DISTANCE_TO_FAULT_1];
+    w2  = p->rpval[DISTANCE_TO_FAULT_2];
+
+    rws = p->rw*exp(-S);
+    a   = (p->qB * p->mu * p->C2) / (p->h * k);
+    b   = (p->phi * p->mu * p->ct * rws * rws) / (k * p->C1);
+    z   = (p->phi * p->mu * p->ct)             / (k * p->C1);
+    CD  = (C * p->C3) / (p->phi * p->h  * p->ct * rws * rws);
 
     aux0  = u * b;
     aux1  = sqrt(aux0);
     aux2  = sqrt(u * z);
     sum   = gsl_sf_bessel_K0(aux1);
 
-    while( (fabs(delta) > epsilon) && (fabs(delta1) > epsilon) )
-    {
-        wn = 2.0*(p->w1*i + p->w2*j);
-        ws = 2.0*(p->w1*j + p->w2*i);
+    while( (fabs(delta) > epsilon) && (fabs(delta1) > epsilon) ) {
+        wn = 2.0*(w1*i + w2*j);
+        ws = 2.0*(w1*j + w2*i);
 
         delta  = gsl_sf_bessel_K0(wn * aux2)
                  + gsl_sf_bessel_K0(ws * aux2);
@@ -125,12 +135,10 @@ double ddpwfc_dkbar(const void *parameters, double u)
 
         sum1 += delta1;
 
-        if(nloop%2 == 0)
-        {
+        if(nloop%2 == 0) {
             j++;
         }
-        else
-        {
+        else {
             i++;
         }
 
@@ -139,7 +147,7 @@ double ddpwfc_dkbar(const void *parameters, double u)
 
     //printf("i = %d, j = %d\n", i, j);
 
-    numer  = (a / p->k) * ( aux1*gsl_sf_bessel_K1(aux1) + aux2*sum1 - 2.0*sum );
+    numer  = (a / k) * ( aux1*gsl_sf_bessel_K1(aux1) + aux2*sum1 - 2.0*sum );
 
     denom  = ( 1.0 + CD * aux0 * sum );
     denom *= denom;
@@ -156,6 +164,7 @@ d(dpwf)/dC function in the Laplace space
 double ddpwfc_dCbar(const void *parameters, double u)
 {
     double a, b, c, CD, rws, z, numer, denom, aux0, aux1, aux2, aux3;
+    double k, S, C, w1, w2;
     double epsilon = DBL_EPSILON;
     double sum = 0.0, delta = 1.0, wn, ws;
     int j = 0, i = 1, nloop = 0;
@@ -165,34 +174,37 @@ double ddpwfc_dCbar(const void *parameters, double u)
 
     gsl_set_error_handler_off();
 
-    rws = p->rw*exp(-p->S);
-    a   = (p->qB * p->mu * p->C2) / (p->h * p->k);
-    b   = (p->phi * p->mu * p->ct * rws * rws) / (p->k * p->C1);
-    z   = (p->phi * p->mu * p->ct)             / (p->k * p->C1);
-    CD  = (p->C * p->C3) / (p->phi * p->h  * p->ct * rws * rws);
-    c   = (p->C3)        / (p->phi * p->h  * p->ct * rws * rws);
+    k   = p->rpval[PERMEABILITY];
+    S   = p->rpval[SKIN_FACTOR];
+    C   = p->rpval[WELLBORE_STORAGE];
+    w1  = p->rpval[DISTANCE_TO_FAULT_1];
+    w2  = p->rpval[DISTANCE_TO_FAULT_2];
+
+    rws = p->rw*exp(-S);
+    a   = (p->qB * p->mu * p->C2) / (p->h * k);
+    b   = (p->phi * p->mu * p->ct * rws * rws) / (k * p->C1);
+    z   = (p->phi * p->mu * p->ct)             / (k * p->C1);
+    CD  = (C * p->C3) / (p->phi * p->h  * p->ct * rws * rws);
+    c   = (p->C3)     / (p->phi * p->h  * p->ct * rws * rws);
 
     aux0 = u * b;
     aux1 = sqrt(aux0);
     aux2 = sqrt(u * z);
     aux3 = gsl_sf_bessel_K0(aux1);
 
-    while(fabs(delta) > epsilon)
-    {
-        wn = 2.0*(p->w1*i + p->w2*j);
-        ws = 2.0*(p->w1*j + p->w2*i);
+    while(fabs(delta) > epsilon) {
+        wn = 2.0*(w1*i + w2*j);
+        ws = 2.0*(w1*j + w2*i);
 
         delta = gsl_sf_bessel_K0(wn * aux2)
                 + gsl_sf_bessel_K0(ws * aux2);
 
         sum += delta;
 
-        if(nloop%2 == 0)
-        {
+        if(nloop%2 == 0) {
             j++;
         }
-        else
-        {
+        else {
             i++;
         }
 
@@ -217,6 +229,7 @@ d(dpwf)/dS function in the Laplace space
 double ddpwfc_dSbar(const void *parameters, double u)
 {
     double a, b, rws, w, y, z, numer, denom, aux0, aux1, aux2, aux3;
+    double k, S, C, w1, w2;
     double epsilon = DBL_EPSILON;
     double sum = 0.0, delta = 1.0, wn, ws;
     int j = 0, i = 1, nloop = 0;
@@ -226,34 +239,37 @@ double ddpwfc_dSbar(const void *parameters, double u)
 
     gsl_set_error_handler_off();
 
-    rws = p->rw*exp(-p->S);
-    a   = (p->qB * p->mu * p->C2) / (p->h * p->k);
-    b   = (p->phi * p->mu * p->ct * rws * rws)     / (p->k * p->C1);
-    y   = (p->phi * p->mu * p->ct * p->rw * p->rw) / (p->k * p->C1);
-    z   = (p->phi * p->mu * p->ct)                 / (p->k * p->C1);
-    w   = (p->C * p->C3) / (p->phi * p->h  * p->ct * p->rw * p->rw);
+    k   = p->rpval[PERMEABILITY];
+    S   = p->rpval[SKIN_FACTOR];
+    C   = p->rpval[WELLBORE_STORAGE];
+    w1  = p->rpval[DISTANCE_TO_FAULT_1];
+    w2  = p->rpval[DISTANCE_TO_FAULT_2];
+
+    rws = p->rw*exp(-S);
+    a   = (p->qB * p->mu * p->C2) / (p->h * k);
+    b   = (p->phi * p->mu * p->ct * rws * rws)     / (k * p->C1);
+    y   = (p->phi * p->mu * p->ct * p->rw * p->rw) / (k * p->C1);
+    z   = (p->phi * p->mu * p->ct)                 / (k * p->C1);
+    w   = (C * p->C3) / (p->phi * p->h  * p->ct * p->rw * p->rw);
 
     aux0 = u * b;
     aux1 = sqrt(aux0);
     aux2 = sqrt(u * z);
     aux3 = gsl_sf_bessel_K0(aux1);
 
-    while(fabs(delta) > epsilon)
-    {
-        wn = 2.0*(p->w1*i + p->w2*j);
-        ws = 2.0*(p->w1*j + p->w2*i);
+    while(fabs(delta) > epsilon) {
+        wn = 2.0*(w1*i + w2*j);
+        ws = 2.0*(w1*j + w2*i);
 
         delta = gsl_sf_bessel_K0(wn * aux2)
                 + gsl_sf_bessel_K0(ws * aux2);
 
         sum += delta;
 
-        if(nloop%2 == 0)
-        {
+        if(nloop%2 == 0) {
             j++;
         }
-        else
-        {
+        else {
             i++;
         }
 
@@ -278,6 +294,7 @@ d(dpwf)/dw1 function in the Laplace space
 double ddpwfc_dw1bar(const void *parameters, double u)
 {
     double a, b, CD, rws, z, numer, denom, aux0, aux1, aux2;
+    double k, S, C, w1, w2;
     double epsilon = DBL_EPSILON;
     double sum = 0.0, sum1 = 0.0, delta = 1.0, delta1 = 1.0, wn, ws;
     int j = 0, i = 1, nloop = 0;
@@ -287,20 +304,25 @@ double ddpwfc_dw1bar(const void *parameters, double u)
 
     gsl_set_error_handler_off();
 
-    rws = p->rw*exp(-p->S);
-    a   = (p->qB * p->mu * p->C2) / (p->h * p->k);
-    b   = (p->phi * p->mu * p->ct * rws * rws) / (p->k * p->C1);
-    z   = (p->phi * p->mu * p->ct)             / (p->k * p->C1);
-    CD  = (p->C * p->C3) / (p->phi * p->h  * p->ct * rws * rws);
+    k   = p->rpval[PERMEABILITY];
+    S   = p->rpval[SKIN_FACTOR];
+    C   = p->rpval[WELLBORE_STORAGE];
+    w1  = p->rpval[DISTANCE_TO_FAULT_1];
+    w2  = p->rpval[DISTANCE_TO_FAULT_2];
+
+    rws = p->rw*exp(-S);
+    a   = (p->qB * p->mu * p->C2) / (p->h * k);
+    b   = (p->phi * p->mu * p->ct * rws * rws) / (k * p->C1);
+    z   = (p->phi * p->mu * p->ct)             / (k * p->C1);
+    CD  = (C * p->C3) / (p->phi * p->h  * p->ct * rws * rws);
 
     aux0  = u*b;
     aux1  = sqrt(aux0);
     aux2  = sqrt(u*z);
 
-    while( (fabs(delta) > epsilon) && (fabs(delta1) > epsilon) )
-    {
-        wn = 2.0*(p->w1*i + p->w2*j);
-        ws = 2.0*(p->w1*j + p->w2*i);
+    while( (fabs(delta) > epsilon) && (fabs(delta1) > epsilon) ) {
+        wn = 2.0*(w1*i + w2*j);
+        ws = 2.0*(w1*j + w2*i);
 
         delta  = gsl_sf_bessel_K0(wn * aux2)
                  + gsl_sf_bessel_K0(ws * aux2);
@@ -312,12 +334,10 @@ double ddpwfc_dw1bar(const void *parameters, double u)
 
         sum1 += delta1;
 
-        if(nloop%2 == 0)
-        {
+        if(nloop%2 == 0) {
             j++;
         }
-        else
-        {
+        else {
             i++;
         }
 
@@ -343,6 +363,7 @@ d(dpwf)/dw2 function in the Laplace space
 double ddpwfc_dw2bar(const void *parameters, double u)
 {
     double a, b, CD, rws, z, numer, denom, aux0, aux1, aux2;
+    double k, S, C, w1, w2;
     double epsilon = DBL_EPSILON;
     double sum = 0.0, sum1 = 0.0, delta = 1.0, delta1 = 1.0, wn, ws;
     int j = 0, i = 1, nloop = 0;
@@ -352,20 +373,25 @@ double ddpwfc_dw2bar(const void *parameters, double u)
 
     gsl_set_error_handler_off();
 
-    rws = p->rw*exp(-p->S);
-    a   = (p->qB * p->mu * p->C2) / (p->h * p->k);
-    b   = (p->phi * p->mu * p->ct * rws * rws) / (p->k * p->C1);
-    z   = (p->phi * p->mu * p->ct)             / (p->k * p->C1);
-    CD  = (p->C * p->C3) / (p->phi * p->h  * p->ct * rws * rws);
+    k   = p->rpval[PERMEABILITY];
+    S   = p->rpval[SKIN_FACTOR];
+    C   = p->rpval[WELLBORE_STORAGE];
+    w1  = p->rpval[DISTANCE_TO_FAULT_1];
+    w2  = p->rpval[DISTANCE_TO_FAULT_2];
+
+    rws = p->rw*exp(-S);
+    a   = (p->qB * p->mu * p->C2) / (p->h * k);
+    b   = (p->phi * p->mu * p->ct * rws * rws) / (k * p->C1);
+    z   = (p->phi * p->mu * p->ct)             / (k * p->C1);
+    CD  = (C * p->C3) / (p->phi * p->h  * p->ct * rws * rws);
 
     aux0  = u*b;
     aux1  = sqrt(aux0);
     aux2  = sqrt(u*z);
 
-    while( (fabs(delta) > epsilon) && (fabs(delta1) > epsilon) )
-    {
-        wn = 2.0*(p->w1*i + p->w2*j);
-        ws = 2.0*(p->w1*j + p->w2*i);
+    while( (fabs(delta) > epsilon) && (fabs(delta1) > epsilon) ) {
+        wn = 2.0*(w1*i + w2*j);
+        ws = 2.0*(w1*j + w2*i);
 
         delta  = gsl_sf_bessel_K0(wn * aux2)
                  + gsl_sf_bessel_K0(ws * aux2);
@@ -377,12 +403,10 @@ double ddpwfc_dw2bar(const void *parameters, double u)
 
         sum1 += delta1;
 
-        if(nloop%2 == 0)
-        {
+        if(nloop%2 == 0) {
             j++;
         }
-        else
-        {
+        else {
             i++;
         }
 
@@ -410,12 +434,10 @@ double dpwfc(const modelparameters *p, double t)
 {
     double f;
 
-    if(t == 0.0)
-    {
+    if(t == 0.0) {
         f = 0.0;
     }
-    else
-    {
+    else {
         f = stehfest_ilt(&dpwfcbar, p, p->nstehfest, p->v, t);
     }
 
@@ -433,12 +455,10 @@ double ddpwfc_dk(const modelparameters *p, double t)
 {
     double f;
 
-    if(t == 0.0)
-    {
+    if(t == 0.0) {
         f = 0.0;
     }
-    else
-    {
+    else {
         f = stehfest_ilt(&ddpwfc_dkbar, p, p->nstehfest, p->v, t);
     }
 
@@ -456,12 +476,10 @@ double ddpwfc_dC(const modelparameters *p, double t)
 {
     double f;
 
-    if(t == 0.0)
-    {
+    if(t == 0.0) {
         f = 0.0;
     }
-    else
-    {
+    else {
         f = stehfest_ilt(&ddpwfc_dCbar, p, p->nstehfest, p->v, t);
     }
 
@@ -479,12 +497,10 @@ double ddpwfc_dS(const modelparameters *p, double t)
 {
     double f;
 
-    if(t == 0.0)
-    {
+    if(t == 0.0) {
         f = 0.0;
     }
-    else
-    {
+    else {
         f = stehfest_ilt(&ddpwfc_dSbar, p, p->nstehfest, p->v, t);
     }
 
@@ -502,12 +518,10 @@ double ddpwfc_dw1(const modelparameters *p, double t)
 {
     double f;
 
-    if(t == 0.0)
-    {
+    if(t == 0.0) {
         f = 0.0;
     }
-    else
-    {
+    else {
         f = stehfest_ilt(&ddpwfc_dw1bar, p, p->nstehfest, p->v, t);
     }
 
@@ -525,12 +539,10 @@ double ddpwfc_dw2(const modelparameters *p, double t)
 {
     double f;
 
-    if(t == 0.0)
-    {
+    if(t == 0.0) {
         f = 0.0;
     }
-    else
-    {
+    else {
         f = stehfest_ilt(&ddpwfc_dw2bar, p, p->nstehfest, p->v, t);
     }
 
