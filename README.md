@@ -51,10 +51,10 @@ The sections and parameters are as follows:
   - `testtype`: identifies the type of test, according to the following values: 0 for a test with multiple flow rates, with pressures in more than one flow period (see example Gringarten_1979); 1 for a drawdown test (initial) with constant flow rate; 2 for a pressure build up test, after a period of production with constant flow rate (see example Bourdet_1983_1); 3 for an injection test (initial), with constant flow rate; 4 for a falloff test, after a period of constant injection flow rate; 5 for a shut-in period, preceded by periods with different flow rates; and 6 for a period with positive flow rate, preceded by periods with different flow rates.
   - `pressfile`: is a string with the name of the text file with the pressure vs time data table, including its relative path. Each line of this file contains the time value, separated from the pressure value by spaces or tabs, in the `units` specified in `Units system`.
   - `presssize`: is the number of lines in the file with the pressure data.
-  - `ratefile`: is a string with the name of the file with the flow rate vs. time data table, including its relative path. Each line of this file contains the time value, separated from the flow rate value by spaces or tabs, in the units specified in `Units system`. For example, the table:
-    `0.00 250.0`
-    `12.0 500.0`
-    `24.0 000.0`
+  - `ratefile`: is a string with the name of the file with the flow rate vs. time data table, including its relative path. Each line of this file contains the time value, separated from the flow rate value by spaces or tabs, in the units specified in `Units system`. For example, the table:  
+    `0.00 250.0`  
+    `12.0 500.0`  
+    `24.0 000.0`   
 indicates that the well produced with a flow rate of 250.0 between times 0.0 and 12.0, and with a flow rate of 500.0 between times 12.0 and 24.0, after which it was closed. With the exception of the test identified as `testtype` = 0, the pressures in the `pressfile` file must match the last period in the `ratefile` file, which is the period under analysis.
    - `ratesize`: it is the number of lines in the file with the flow rate data.
    - `phi`: porosity (required)

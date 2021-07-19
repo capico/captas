@@ -3,8 +3,8 @@
 
 #define LENGTHFN    64  // file name length
 
-#define NMODELS     13  // number of wellbore/reservoir models
-#define NPARAMETERS 16  // total number of parameters
+#define NMODELS     14  // number of wellbore/reservoir models
+#define NPARAMETERS 19  // total number of parameters
 
 /* reservoir/well-bore parameters for regression */
 #define PERMEABILITY                    0
@@ -23,6 +23,9 @@
 #define LAMBDA                          13
 #define FRACTURE_HALF_LENGTH            14
 #define FRACTURE_CONDUCTIVITY           15
+#define PERMEABILITY_RATIO              16
+#define PENETRATION_RATIO               17
+#define MIDPOINT_ELEVATION              18
 
 typedef struct
 {

@@ -38,6 +38,7 @@
 #define PWFDPTSP    10
 #define PWFICF      11
 #define PWFFCF      12
+#define PWFLE       13
 
 /* test type */
 #define MULTIRATE			0
