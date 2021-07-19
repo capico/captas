@@ -54,7 +54,7 @@ The sections and parameters are as follows:
   - `ratefile`: is a string with the name of the file with the flow rate vs. time data table, including its relative path. Each line of this file contains the time value, separated from the flow rate value by spaces or tabs, in the units specified in `Units system`. For example, the table:  
     `0.00 250.0`  
     `12.0 500.0`  
-    `24.0 000.0`   
+    `24.0 000.0`  
 indicates that the well produced with a flow rate of 250.0 between times 0.0 and 12.0, and with a flow rate of 500.0 between times 12.0 and 24.0, after which it was closed. With the exception of the test identified as `testtype` = 0, the pressures in the `pressfile` file must match the last period in the `ratefile` file, which is the period under analysis.
    - `ratesize`: it is the number of lines in the file with the flow rate data.
    - `phi`: porosity (required)

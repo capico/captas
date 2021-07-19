@@ -506,109 +506,109 @@ parameters to the default values.
 */
 void init_parameters(modelparameters *par)
 {
-    int i, j;
+	int i, j;
 
-    for(i = 0; i < NPARAMETERS; i++){
-        par->rp[i]  = OFF;
-        par->jac[i] = CENTRAL;
-    }
+	for(i = 0; i < NPARAMETERS; i++){
+		par->rp[i]  = OFF;
+		par->jac[i] = CENTRAL;
+	}
 
-    par->parnames[PERMEABILITY]          = "k";
-    par->parnames[SKIN_FACTOR]           = "S";
-    par->parnames[WELLBORE_STORAGE]      = "C";
-    par->parnames[INITIAL_PRESSURE]      = "pi";
-    par->parnames[EXTERNAL_RADIUS]       = "re";
-    par->parnames[DISTANCE_TO_FAULT]     = "L";
-    par->parnames[DISTANCE_TO_FAULT_1]   = "w1";
-    par->parnames[DISTANCE_TO_FAULT_2]   = "w2";
-    par->parnames[DISTANCE_TO_FAULT_1_X] = "w1x";
-    par->parnames[DISTANCE_TO_FAULT_2_X] = "w2x";
-    par->parnames[DISTANCE_TO_FAULT_1_Y] = "w1y";
-    par->parnames[DISTANCE_TO_FAULT_2_Y] = "w2y";
-    par->parnames[OMEGA]                 = "omega";
-    par->parnames[LAMBDA]                = "lambda";
-    par->parnames[FRACTURE_HALF_LENGTH]  = "xf";
-    par->parnames[FRACTURE_CONDUCTIVITY] = "fc";
+	par->parnames[PERMEABILITY]          = "k";
+	par->parnames[SKIN_FACTOR]           = "S";
+	par->parnames[WELLBORE_STORAGE]      = "C";
+	par->parnames[INITIAL_PRESSURE]      = "pi";
+	par->parnames[EXTERNAL_RADIUS]       = "re";
+	par->parnames[DISTANCE_TO_FAULT]     = "L";
+	par->parnames[DISTANCE_TO_FAULT_1]   = "w1";
+	par->parnames[DISTANCE_TO_FAULT_2]   = "w2";
+	par->parnames[DISTANCE_TO_FAULT_1_X] = "w1x";
+	par->parnames[DISTANCE_TO_FAULT_2_X] = "w2x";
+	par->parnames[DISTANCE_TO_FAULT_1_Y] = "w1y";
+	par->parnames[DISTANCE_TO_FAULT_2_Y] = "w2y";
+	par->parnames[OMEGA]                 = "omega";
+	par->parnames[LAMBDA]                = "lambda";
+	par->parnames[FRACTURE_HALF_LENGTH]  = "xf";
+	par->parnames[FRACTURE_CONDUCTIVITY] = "fc";
 	par->parnames[PERMEABILITY_RATIO]    = "krat";
 	par->parnames[PENETRATION_RATIO]     = "b";
 	par->parnames[MIDPOINT_ELEVATION]    = "zw";
 
-    /******************** pointers to delta_pwf functions ********************/
-    for(i = 0; i <  NMODELS; i++){
-        par->dpwffcn[i] = f_default;
-    }
-    par->dpwffcn[PWF]       = dpwf;
-    par->dpwffcn[PWFT]      = dpwf;
-    par->dpwffcn[PWFNFOB]   = dpwfnfob;
-    par->dpwffcn[PWFCPOB]   = dpwfcpob;
-    par->dpwffcn[PWFF]      = dpwff;
-    par->dpwffcn[PWFC]      = dpwfc;
-    par->dpwffcn[PWFCL]     = dpwfcl;
-    par->dpwffcn[PWFRECT]   = dpwfrect;
-    par->dpwffcn[PWFDPPSS]  = dpwfdppss;
-    par->dpwffcn[PWFDPTSL]  = dpwfdptsl;
-    par->dpwffcn[PWFDPTSP]  = dpwfdptsp;
-    par->dpwffcn[PWFICF]    = dpwficf;
-    par->dpwffcn[PWFFCF]    = dpwffcf;
+	/******************** pointers to delta_pwf functions ********************/
+	for(i = 0; i <  NMODELS; i++){
+		par->dpwffcn[i] = f_default;
+	}
+	par->dpwffcn[PWF]       = dpwf;
+	par->dpwffcn[PWFT]      = dpwf;
+	par->dpwffcn[PWFNFOB]   = dpwfnfob;
+	par->dpwffcn[PWFCPOB]   = dpwfcpob;
+	par->dpwffcn[PWFF]      = dpwff;
+	par->dpwffcn[PWFC]      = dpwfc;
+	par->dpwffcn[PWFCL]     = dpwfcl;
+	par->dpwffcn[PWFRECT]   = dpwfrect;
+	par->dpwffcn[PWFDPPSS]  = dpwfdppss;
+	par->dpwffcn[PWFDPTSL]  = dpwfdptsl;
+	par->dpwffcn[PWFDPTSP]  = dpwfdptsp;
+	par->dpwffcn[PWFICF]    = dpwficf;
+	par->dpwffcn[PWFFCF]    = dpwffcf;
 	par->dpwffcn[PWFLE]     = dpwfle;
 
-    /*************** pointers to interporosity flow functions ****************/
-    for(i = 0; i <  NMODELS; i++){
-        par->f[i] = f_default;
-    }
-    par->f[PWFDPPSS]  = fpss;
-    par->f[PWFDPTSL]  = ftsl;
-    par->f[PWFDPTSP]  = ftsp;
+	/*************** pointers to interporosity flow functions ****************/
+	for(i = 0; i <  NMODELS; i++){
+		par->f[i] = f_default;
+	}
+	par->f[PWFDPPSS]  = fpss;
+	par->f[PWFDPTSL]  = ftsl;
+	par->f[PWFDPTSP]  = ftsp;
 
-    /********* pointers to the derivatives of the delta_pwf functions ********/
-    for(i = 0; i <  NMODELS; i++)
-    {
-        for(j = 0; j < NPARAMETERS; j++) {
-            par->dr_dx[i][j] = f_default;
-        }
-    }
-    par->dr_dx[PWF][PERMEABILITY]          = ddpwf_dk;
-    par->dr_dx[PWF][WELLBORE_STORAGE]      = ddpwf_dC;
-    par->dr_dx[PWF][SKIN_FACTOR]           = ddpwf_dS;
+	/********* pointers to the derivatives of the delta_pwf functions ********/
+	for(i = 0; i <  NMODELS; i++)
+	{
+		for(j = 0; j < NPARAMETERS; j++) {
+			par->dr_dx[i][j] = f_default;
+		}
+	}
+	par->dr_dx[PWF][PERMEABILITY]          = ddpwf_dk;
+	par->dr_dx[PWF][WELLBORE_STORAGE]      = ddpwf_dC;
+	par->dr_dx[PWF][SKIN_FACTOR]           = ddpwf_dS;
 
-    par->dr_dx[PWFT][PERMEABILITY]         = ddpwft_dk;
-    par->dr_dx[PWFT][WELLBORE_STORAGE]     = ddpwft_dC;
-    par->dr_dx[PWFT][SKIN_FACTOR]          = ddpwft_dS;
+	par->dr_dx[PWFT][PERMEABILITY]         = ddpwft_dk;
+	par->dr_dx[PWFT][WELLBORE_STORAGE]     = ddpwft_dC;
+	par->dr_dx[PWFT][SKIN_FACTOR]          = ddpwft_dS;
 
-    par->dr_dx[PWFF][PERMEABILITY]         = ddpwff_dk;
-    par->dr_dx[PWFF][WELLBORE_STORAGE]     = ddpwff_dC;
-    par->dr_dx[PWFF][SKIN_FACTOR]          = ddpwff_dS;
-    par->dr_dx[PWFF][DISTANCE_TO_FAULT]    = ddpwff_dL;
+	par->dr_dx[PWFF][PERMEABILITY]         = ddpwff_dk;
+	par->dr_dx[PWFF][WELLBORE_STORAGE]     = ddpwff_dC;
+	par->dr_dx[PWFF][SKIN_FACTOR]          = ddpwff_dS;
+	par->dr_dx[PWFF][DISTANCE_TO_FAULT]    = ddpwff_dL;
 
-    par->dr_dx[PWFC][PERMEABILITY]         = ddpwfc_dk;
-    par->dr_dx[PWFC][WELLBORE_STORAGE]     = ddpwfc_dC;
-    par->dr_dx[PWFC][SKIN_FACTOR]          = ddpwfc_dS;
-    par->dr_dx[PWFC][DISTANCE_TO_FAULT_1]  = ddpwfc_dw1;
-    par->dr_dx[PWFC][DISTANCE_TO_FAULT_2]  = ddpwfc_dw2;
+	par->dr_dx[PWFC][PERMEABILITY]         = ddpwfc_dk;
+	par->dr_dx[PWFC][WELLBORE_STORAGE]     = ddpwfc_dC;
+	par->dr_dx[PWFC][SKIN_FACTOR]          = ddpwfc_dS;
+	par->dr_dx[PWFC][DISTANCE_TO_FAULT_1]  = ddpwfc_dw1;
+	par->dr_dx[PWFC][DISTANCE_TO_FAULT_2]  = ddpwfc_dw2;
 
-    par->dr_dx[PWFCL][PERMEABILITY]        = ddpwfcl_dk;
-    par->dr_dx[PWFCL][SKIN_FACTOR]         = ddpwfcl_dS;
-    par->dr_dx[PWFCL][DISTANCE_TO_FAULT_1] = ddpwfcl_dw1;
-    par->dr_dx[PWFCL][DISTANCE_TO_FAULT_2] = ddpwfcl_dw2;
+	par->dr_dx[PWFCL][PERMEABILITY]        = ddpwfcl_dk;
+	par->dr_dx[PWFCL][SKIN_FACTOR]         = ddpwfcl_dS;
+	par->dr_dx[PWFCL][DISTANCE_TO_FAULT_1] = ddpwfcl_dw1;
+	par->dr_dx[PWFCL][DISTANCE_TO_FAULT_2] = ddpwfcl_dw2;
 
-    par->dr_dx[PWFCPOB][WELLBORE_STORAGE]  = ddpwfcpob_dC;
+	par->dr_dx[PWFCPOB][WELLBORE_STORAGE]  = ddpwfcpob_dC;
 
-    par->dr_dx[PWFNFOB][PERMEABILITY]      = ddpwfnfob_dk;
-    par->dr_dx[PWFNFOB][WELLBORE_STORAGE]  = ddpwfnfob_dC;
-    par->dr_dx[PWFNFOB][SKIN_FACTOR]       = ddpwfnfob_dS;
-    par->dr_dx[PWFNFOB][EXTERNAL_RADIUS]   = ddpwfnfob_dre;
+	par->dr_dx[PWFNFOB][PERMEABILITY]      = ddpwfnfob_dk;
+	par->dr_dx[PWFNFOB][WELLBORE_STORAGE]  = ddpwfnfob_dC;
+	par->dr_dx[PWFNFOB][SKIN_FACTOR]       = ddpwfnfob_dS;
+	par->dr_dx[PWFNFOB][EXTERNAL_RADIUS]   = ddpwfnfob_dre;
 
-    par->dr_dx[PWFDPPSS][WELLBORE_STORAGE] = ddpwfdppss_dC;
+	par->dr_dx[PWFDPPSS][WELLBORE_STORAGE] = ddpwfdppss_dC;
 
-    par->dr_dx[PWFDPTSL][WELLBORE_STORAGE] = ddpwfdptsl_dC;
+	par->dr_dx[PWFDPTSL][WELLBORE_STORAGE] = ddpwfdptsl_dC;
 
-    par->dr_dx[PWFDPTSP][WELLBORE_STORAGE] = ddpwfdptsp_dC;
+	par->dr_dx[PWFDPTSP][WELLBORE_STORAGE] = ddpwfdptsp_dC;
 
-    par->dr_dx[PWFICF][WELLBORE_STORAGE]   = ddpwficf_dC;
-    par->dr_dx[PWFICF][SKIN_FACTOR]        = ddpwficf_dS;
+	par->dr_dx[PWFICF][WELLBORE_STORAGE]   = ddpwficf_dC;
+	par->dr_dx[PWFICF][SKIN_FACTOR]        = ddpwficf_dS;
 
-    par->dr_dx[PWFFCF][WELLBORE_STORAGE]   = ddpwffcf_dC;
-    par->dr_dx[PWFFCF][SKIN_FACTOR]        = ddpwffcf_dS;
+	par->dr_dx[PWFFCF][WELLBORE_STORAGE]   = ddpwffcf_dC;
+	par->dr_dx[PWFFCF][SKIN_FACTOR]        = ddpwffcf_dS;
 
 	par->dr_dx[PWFLE][WELLBORE_STORAGE]    = ddpwfle_dC;
 

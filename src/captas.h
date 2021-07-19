@@ -66,16 +66,16 @@
 
 const char *lm_nlsf_msg[] =
 {
-    "improper input parameters.",
-    "both actual and predicted relative reductions in the sum of squares are at most ftol.",
-    "relative error between two consecutive iterates is at most xtol.",
-    "actual and predicted relative reductions are at most ftol, and relative error between two consecutive iterates is at most xtol.",
-    "the cosine of the angle between fvec and any column of the jacobian is at most gtol in absolute value.",
-    "number of calls to fcn with iflag = 1 has reached maxfev.",
-    "ftol is too small. no further reduction in the sum of squares is possible.",
-    "xtol is too small. no further improvement in the approximate solution x is possible.",
-    "gtol is too small. fvec is orthogonal to the columns of the jacobian to machine precision.",
-    "memory allocation failure."
+	"improper input parameters.",
+	"both actual and predicted relative reductions in the sum of squares are at most ftol.",
+	"relative error between two consecutive iterates is at most xtol.",
+	"actual and predicted relative reductions are at most ftol, and relative error between two consecutive iterates is at most xtol.",
+	"the cosine of the angle between fvec and any column of the jacobian is at most gtol in absolute value.",
+	"number of calls to fcn with iflag = 1 has reached maxfev.",
+	"ftol is too small. no further reduction in the sum of squares is possible.",
+	"xtol is too small. no further improvement in the approximate solution x is possible.",
+	"gtol is too small. fvec is orthogonal to the columns of the jacobian to machine precision.",
+	"memory allocation failure."
 };
 
 double f_default(void);
@@ -101,12 +101,12 @@ void calc_log_derivative(modelparameters *par, lmdatatype *data);
 void calc_pressure(modelparameters *par, lmdatatype *data);
 
 void resjacprn(int m, int n, double *x, double *fv, double **fjac,
-               lmdatatype *data, void *modelpar, int *iflag);
+			   lmdatatype *data, void *modelpar, int *iflag);
 
 void residual(int, int, double *, double *, lmdatatype *, void *, int *);
 
 void jacobian(int, int, double *, double *, double **, lmdatatype *, void *,
-              int *);
+			  int *);
 
 void printiter(int, double *);
 
@@ -115,16 +115,16 @@ void setxtomodel(double *x, int n, modelparameters *par);
 void setmodeltox(double *x, int n, modelparameters *par);
 
 void fd_jacobian(int m, int n, double *x, int k, double *fv, double **fjac,
-                 lmdatatype *data, void *par, int *iflag);
+				 lmdatatype *data, void *par, int *iflag);
 
 void lm_nlsf(void fcn(), lmdatatype *data, void *modelpar, int m, int n,
-             double *x, double *ci, double **corr, double *fvec, double **fjac,
-             double tol, int *info, int *nfev, int *njev, double *fnorm, int mode);
+			 double *x, double *ci, double **corr, double *fvec, double **fjac,
+			 double tol, int *info, int *nfev, int *njev, double *fnorm, int mode);
 
 void print_par(FILE *file_name, double *x, double *ci, double **corr,
-               int n, modelparameters *par);
+			   int n, modelparameters *par);
 
 void write_outfile(modelparameters *par, lmdatatype *data, double *x,
-                   double *ci, double **corr);
+				   double *ci, double **corr);
 
 #endif
