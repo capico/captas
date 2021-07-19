@@ -59,7 +59,7 @@ todo.txt
 # obj folder
 /obj
 # bin folder
-/bin
+/bin/Debug
 *Thumbs.db
 *~
 *#
