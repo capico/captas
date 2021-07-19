@@ -21,7 +21,7 @@ The source files for iniparser and gnuplot_i are included in the `src` folder. T
 
 ### Platform
 
-captas is designed to run on Windows (gcc with msys2 or wsl) and Linux platforms.
+captas is designed to run on Windows (gcc with cygwin, msys2 or wsl) and Linux platforms.
 
 To compile use:
 
