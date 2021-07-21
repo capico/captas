@@ -509,8 +509,9 @@ void init_parameters(modelparameters *par)
 	int i, j;
 
 	for(i = 0; i < NPARAMETERS; i++){
-		par->rp[i]  = OFF;
-		par->jac[i] = CENTRAL;
+		par->rpsta[i] = OFF;
+		par->rpjac[i] = CENTRAL;
+		par->rpdx[i]  = DX_DEFAULT;
 	}
 
 	par->parnames[PERMEABILITY]          = "k";
@@ -623,7 +624,7 @@ void init_parameters(modelparameters *par)
 	par->dr_dx[PWFDPTSL][INITIAL_PRESSURE] =
 	par->dr_dx[PWFDPTSP][INITIAL_PRESSURE] =
 	par->dr_dx[PWFICF][INITIAL_PRESSURE]   =
-	par->dr_dx[PWFFCF][INITIAL_PRESSURE]   = 
+	par->dr_dx[PWFFCF][INITIAL_PRESSURE]   =
 	par->dr_dx[PWFLE][INITIAL_PRESSURE]    = dr_dpi;
 
 	par->dr_dx[PWFT][INITIAL_PRESSURE]     = drt_dpi;
@@ -649,10 +650,11 @@ void read_inifile(modelparameters *par)
 {
 	char *str;
 	char
-	*strval = "Test description:",
-	*strsta = "Regression parameters:rp_",
-	*strjac = "Regression parameters derivatives:jac_";
-	char *strtmp[LENGTENTRY];
+		*strval = "Test description:",
+		*strsta = "Regression parameters:rp_",
+		*strjac = "Regression parameters derivatives:jac_",
+		*strdx  = "Regression parameters derivatives:dx_";
+	char strtmp[LENGTENTRY];
 	dictionary *ini;
 	int i;
 
@@ -685,13 +687,19 @@ void read_inifile(modelparameters *par)
 	/* status */
     for(i = 0; i < NPARAMETERS; i++){
         strcat(strcpy(strtmp, strsta), par->parnames[i]);
-        par->rp[i] = iniparser_getboolean(ini, strtmp, OFF);
+        par->rpsta[i] = iniparser_getboolean(ini, strtmp, OFF);
 	}
 
     /* derivatives */
     for(i = 0; i < NPARAMETERS; i++){
         strcat(strcpy(strtmp, strjac), par->parnames[i]);
-        par->jac[i] = iniparser_getint(ini, strtmp, CENTRAL);
+        par->rpjac[i] = iniparser_getint(ini, strtmp, CENTRAL);
+	}
+
+	/* dx */
+    for(i = 0; i < NPARAMETERS; i++){
+        strcat(strcpy(strtmp, strdx), par->parnames[i]);
+        par->rpdx[i] = iniparser_getdouble(ini, strtmp, DX_DEFAULT);
 	}
 
 	str = iniparser_getstring(ini, "Test description:pressfile", NULL);
@@ -733,7 +741,7 @@ void set_parameters(modelparameters *par)
 
     par->n = 0;
     for(i = 0; i < NPARAMETERS; i++){
-        par->n += par->rp[i];
+        par->n += par->rpsta[i];
     }
 
 	if(par->nstehfest < 4 ||
@@ -746,20 +754,22 @@ void set_parameters(modelparameters *par)
 	par->v = NULL;
 	par->v = stehfest_init(par->nstehfest, par->v);
 
-	if((par->tps  = (double*)calloc(par->nevents, sizeof(double))) == NULL ||
-       (par->qBps = (double*)calloc(par->nevents, sizeof(double))) == NULL ||
-       (par->nps  = (int*)calloc(par->nevents, sizeof(int))) == NULL ||
-       (par->partype = (int*)calloc(par->n, sizeof(int))) == NULL ||
-       (par->jactype = (int*)calloc(par->n, sizeof(int))) == NULL){
+    if((par->tps  = (double*)calloc(par->nevents, sizeof(double))) == NULL ||
+        (par->qBps = (double*)calloc(par->nevents, sizeof(double))) == NULL ||
+        (par->nps  = (int*)calloc(par->nevents, sizeof(int))) == NULL ||
+        (par->partype = (int*)calloc(par->n, sizeof(int))) == NULL ||
+        (par->jactype = (int*)calloc(par->n, sizeof(int))) == NULL ||
+        (par->dx = (double*)calloc(par->n, sizeof(double))) == NULL){
 
         printf("\n memory allocation failure \n");
         exit(EXIT_FAILURE);
 	}
 
 	for(i = 0, j = 0; i < NPARAMETERS; i++){
-		if(par->rp[i] == ON){
+		if(par->rpsta[i] == ON){
 			par->partype[j] = i;
-			par->jactype[j] = par->jac[i];
+			par->jactype[j] = par->rpjac[i];
+			par->dx[j]      = par->rpdx[i];
 			j++;
 		}
 	}
@@ -1224,8 +1234,12 @@ void fd_jacobian(int m, int n, double *x, int k, double *fv, double **fjac,
 			exit(EXIT_FAILURE);
 	}
 
-	eps = sqrt(sqrt(MACHEPS));
+	//eps = sqrt(sqrt(sqrt(MACHEPS)));
+	//eps = sqrt(sqrt(MACHEPS));
 	//eps = sqrt(MACHEPS);
+	//eps = DX_DEFAULT;
+
+	eps = mpar->dx[k];
 
 	xi = x[k];
 	if(xi == 0.0)

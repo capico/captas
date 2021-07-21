@@ -60,11 +60,13 @@ typedef struct
 		h;      // formation thickness
 
 	/* regression parameters status */
-	int rp[NPARAMETERS];
+	int rpsta[NPARAMETERS];
+	/* regression parameters derivatives type */
+	int rpjac[NPARAMETERS];
 	/* regression parameters values */
 	double rpval[NPARAMETERS];
-	/* regression parameters derivatives type */
-	int jac[NPARAMETERS];
+	/* finite difference parameters derivatives dx */
+	double rpdx[NPARAMETERS];
 
 	char *parnames[NPARAMETERS];
 
@@ -100,6 +102,7 @@ typedef struct
 
 	int *partype;   /* type of parameter (k, S, re, ...)*/
 	int *jactype;   /* analytical or numerical derivatives */
+	double *dx;
 
     /* Stehfest's parameter */
 	int nstehfest;

@@ -62,6 +62,8 @@
 
 #define LDER_DEFAULT      0.1
 
+#define DX_DEFAULT        1.220703125000000e-004
+
 #include "models/models.h"
 
 const char *lm_nlsf_msg[] =
