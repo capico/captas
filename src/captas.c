@@ -702,6 +702,11 @@ void read_inifile(modelparameters *par)
         par->rpdx[i] = iniparser_getdouble(ini, strtmp, DX_DEFAULT);
 	}
 
+	par->model     = iniparser_getint(ini, "Regression model:model", PWF);
+	par->nstehfest = iniparser_getint(ini, "Stehfest parameters:nstehfest", NSTEHFEST_DEFAULT);
+	par->Lder      = iniparser_getdouble(ini, "Smoothing parameters:Lder", LDER_DEFAULT);
+	par->plots     = iniparser_getboolean(ini, "Output:plots", OFF);
+	
 	str = iniparser_getstring(ini, "Test description:pressfile", NULL);
 	strcpy(par->pressfile, str);
 	par->presssize = iniparser_getint(ini, "Test description:presssize", 0);
@@ -712,13 +717,6 @@ void read_inifile(modelparameters *par)
 
 	str = iniparser_getstring(ini, "Output:outfile", NULL);
 	strcpy(par->outfile, str);
-	par->plots = iniparser_getboolean(ini, "Output:plots", OFF);
-
-	par->model = iniparser_getint(ini, "Regression model:model", PWF);
-
-	par->nstehfest = iniparser_getint(ini, "Stehfest parameters:nstehfest", NSTEHFEST_DEFAULT);
-
-	par->Lder = iniparser_getdouble(ini, "Derivative parameters:Lder", LDER_DEFAULT);
 	/*************************************************************************/
 
 	iniparser_freedict(ini);

@@ -108,7 +108,7 @@ typedef struct
 	int nstehfest;
 	double *v;
 
-	/* numerical derivative parameter for loglog plot functions */
+	/* differentiation interval for the logarithmic derivative (loglog plot)*/
 	double Lder;
 
 	int plots;      /* use gnuplot */
