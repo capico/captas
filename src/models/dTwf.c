@@ -30,11 +30,8 @@
 */
 double dTwfcl(const modelparameters *p, double t)
 {
-    double a, b, rws, z;
+    double rws, a, b, f, d;
     double k, S, cpt;
-    double epsilon = DBL_EPSILON;
-    double sum = 0.0, delta = 1.0, wn, ws;
-    int j = 0, i = 1, nloop = 0;
 
     gsl_set_error_handler_off();
 
@@ -42,29 +39,11 @@ double dTwfcl(const modelparameters *p, double t)
     S   = p->rpval[SKIN_FACTOR];
     cpt = p->rpval[EFFECTIVE_HEAT_CAPACITY];
     rws = p->rw * gsl_sf_exp(-S);
-    a   = (p->qB * p->mu * p->C2) / (p->h * k);
-    b   = (p->phi * p->mu * p->ct * rws * rws) / (4.0*k * p->C1 * t);
-    z   = (p->phi * p->mu * p->ct)             / (4.0*k * p->C1 * t);
+    a   = (p->C2 * p->qB * p->mu) / (k * p->h);
+    b   = (pow(p->rw, 2.0) * p->phi * p->ct * rp->mu * p->ct) / (4.0 * k * p->C1);
+    f   = (p->phi * p->rhosc * p->cp) / cpt * (p->ejt + 1 / (p->rhosc * p->cp)) - p->ejt;
+    d   = (p->phi * p->rhosc * p->cp * p->ct) / p->cp / 2 * a;
 
-    while(fabs(delta) > epsilon) {
-        wn = 2.0*(w1*i + w2*j);
-        ws = 2.0*(w1*j + w2*i);
-
-        delta = gsl_sf_expint_E1(wn*wn*z)
-                + gsl_sf_expint_E1(ws*ws*z);
-
-        sum += delta;
-
-        if(nloop%2 == 0) {
-            j++;
-        }
-        else {
-            i++;
-        }
-
-        nloop++;
-    }
-
-    return a * 0.5 * (gsl_sf_expint_E1(b) + sum);
+    return - a * 0.5 * (-p->ejt * (-gsl_sf_expint_E1(-b / t) + 2 * S) + f * gsl_sf_expint_E1(-b / t - d));
 }
 /*****************************************************************************/
