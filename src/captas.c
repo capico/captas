@@ -514,25 +514,26 @@ void init_parameters(modelparameters *par)
 		par->rpdx[i]  = DX_DEFAULT;
 	}
 
-	par->parnames[PERMEABILITY]          = "k";
-	par->parnames[SKIN_FACTOR]           = "S";
-	par->parnames[WELLBORE_STORAGE]      = "C";
-	par->parnames[INITIAL_PRESSURE]      = "pi";
-	par->parnames[EXTERNAL_RADIUS]       = "re";
-	par->parnames[DISTANCE_TO_FAULT]     = "L";
-	par->parnames[DISTANCE_TO_FAULT_1]   = "w1";
-	par->parnames[DISTANCE_TO_FAULT_2]   = "w2";
-	par->parnames[DISTANCE_TO_FAULT_1_X] = "w1x";
-	par->parnames[DISTANCE_TO_FAULT_2_X] = "w2x";
-	par->parnames[DISTANCE_TO_FAULT_1_Y] = "w1y";
-	par->parnames[DISTANCE_TO_FAULT_2_Y] = "w2y";
-	par->parnames[OMEGA]                 = "omega";
-	par->parnames[LAMBDA]                = "lambda";
-	par->parnames[FRACTURE_HALF_LENGTH]  = "xf";
-	par->parnames[FRACTURE_CONDUCTIVITY] = "fc";
-	par->parnames[PERMEABILITY_RATIO]    = "krat";
-	par->parnames[PENETRATION_RATIO]     = "b";
-	par->parnames[MIDPOINT_ELEVATION]    = "zw";
+	par->parnames[PERMEABILITY]            = "k";
+	par->parnames[SKIN_FACTOR]             = "S";
+	par->parnames[WELLBORE_STORAGE]        = "C";
+	par->parnames[INITIAL_PRESSURE]        = "pi";
+	par->parnames[EXTERNAL_RADIUS]         = "re";
+	par->parnames[DISTANCE_TO_FAULT]       = "L";
+	par->parnames[DISTANCE_TO_FAULT_1]     = "w1";
+	par->parnames[DISTANCE_TO_FAULT_2]     = "w2";
+	par->parnames[DISTANCE_TO_FAULT_1_X]   = "w1x";
+	par->parnames[DISTANCE_TO_FAULT_2_X]   = "w2x";
+	par->parnames[DISTANCE_TO_FAULT_1_Y]   = "w1y";
+	par->parnames[DISTANCE_TO_FAULT_2_Y]   = "w2y";
+	par->parnames[OMEGA]                   = "omega";
+	par->parnames[LAMBDA]                  = "lambda";
+	par->parnames[FRACTURE_HALF_LENGTH]    = "xf";
+	par->parnames[FRACTURE_CONDUCTIVITY]   = "fc";
+	par->parnames[PERMEABILITY_RATIO]      = "krat";
+	par->parnames[PENETRATION_RATIO]       = "b";
+	par->parnames[MIDPOINT_ELEVATION]      = "zw",
+	par->parnames[EFFECTIVE_HEAT_CAPACITY] = "cpt";
 
 	/******************** pointers to delta_pwf functions ********************/
 	for(i = 0; i <  NMODELS; i++){
@@ -706,7 +707,7 @@ void read_inifile(modelparameters *par)
 	par->nstehfest = iniparser_getint(ini, "Stehfest parameters:nstehfest", NSTEHFEST_DEFAULT);
 	par->Lder      = iniparser_getdouble(ini, "Smoothing parameters:Lder", LDER_DEFAULT);
 	par->plots     = iniparser_getboolean(ini, "Output:plots", OFF);
-	
+
 	str = iniparser_getstring(ini, "Test description:pressfile", NULL);
 	strcpy(par->pressfile, str);
 	par->presssize = iniparser_getint(ini, "Test description:presssize", 0);

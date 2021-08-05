@@ -4,7 +4,7 @@
 #define LENGTHFN    64  // file name length
 
 #define NMODELS     14  // number of wellbore/reservoir models
-#define NPARAMETERS 19  // total number of parameters
+#define NPARAMETERS 20  // total number of parameters
 
 /* reservoir/well-bore parameters for regression */
 #define PERMEABILITY                    0
@@ -26,6 +26,7 @@
 #define PERMEABILITY_RATIO              16
 #define PENETRATION_RATIO               17
 #define MIDPOINT_ELEVATION              18
+#define EFFECTIVE_HEAT_CAPACITY         19
 
 typedef struct
 {
@@ -57,7 +58,10 @@ typedef struct
 		mu,     // viscosity
 		ct,     // total compressibility
 		rw,     // wellbore radius
-		h;      // formation thickness
+		h,      // formation thickness
+		ejt,    // joule-thomson coefficient
+		rhosc,  // density at standard conditions
+		cp;     // specific heat capacity
 
 	/* regression parameters status */
 	int rpsta[NPARAMETERS];
@@ -86,15 +90,17 @@ typedef struct
 	double (*dr_dx[NMODELS][NPARAMETERS])();
 
 	/* io files */
-	char inifile[LENGTHFN];
-	char outfile[LENGTHFN];
-	char pressfile[LENGTHFN];
-	char ratefile[LENGTHFN];
+	char inifile[LENGTHFN];     // configuration
+	char outfile[LENGTHFN];     // results
+	char pressfile[LENGTHFN];   // pressure vs. time
+	char ratefile[LENGTHFN];    // flow rate vs. time
+	char tempfile[LENGTHFN];    // temperature vs. time
 
 	/* lines in table files */
 	int
 		presssize,
-		ratesize;
+		ratesize,
+		tempsize;
 
 	int
 		m, // data points
