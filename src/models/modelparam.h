@@ -30,13 +30,16 @@ typedef struct
 
     /* fluid and reservoir properties */
     double
-    B,      // formation volume factor
+    B,     // formation volume factor
     qB,
-    phi,    // porosity
-    mu,     // viscosity
-    ct,     // total compressibility
-    rw,     // wellbore radius
-    h;      // formation thickness
+    phi,   // porosity
+    mu,    // viscosity
+    ct,    // total compressibility
+    rw,    // wellbore radius
+    h,     // formation thickness
+    ejt,   // joule-thomson coefficient
+    rhosc, // density at standard conditions
+    cp;    // specific heat capacity
 
     /* wellbore/reservoir parameters */
     double
@@ -54,7 +57,8 @@ typedef struct
     w2y,    // distance to fault 2, y direction
     omega,  // storativity ratio
     lambda, // interporosity flow coefficient
-    xf;     // fracture half length
+    xf,     // fracture half length
+    cpt;    // effective heat capacity
 
     /* Stehfest's parameter */
     int nstehfest;
@@ -79,7 +83,8 @@ typedef struct
     rp_w2y,
     rp_omega,
     rp_lambda,
-    rp_xf;
+    rp_xf,
+    rp_cpt;
 
     /* type of regression parameters derivatives */
     int
@@ -98,6 +103,7 @@ typedef struct
     jac_omega,
     jac_lambda,
     jac_xf;
+    jac_cpt;
 
     /* regression model */
     int model;

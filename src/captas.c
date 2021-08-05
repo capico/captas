@@ -1,6 +1,6 @@
 /*
 
- Computer Aided Pressure Transient Analysis (and Simulation?) – CAPTA(S?)
+ Computer Aided Pressure Transient Analysis (and Simulation?) ï¿½ CAPTA(S?)
      Copyright (C) 2013  Carlos E. Pico
 
     This program is free software: you can redistribute it and/or modify
@@ -468,6 +468,10 @@ void read_inifile(modelparameters *par)
 	par->xf  = iniparser_getdouble(ini, "Test description:xf",   0);
 	par->omega  = iniparser_getdouble(ini, "Test description:omega",  0);
 	par->lambda = iniparser_getdouble(ini, "Test description:lambda", 0);
+	par->cpt = iniparser_getdouble(ini, "Test description:cpt", 0);
+	par->cp = iniparser_getdouble(ini, "Test description:cp", 0);
+	par->ejt = iniparser_getdouble(ini, "Test description:ejt", 0);
+	par->rhosc = iniparser_getdouble(ini, "Test description:rhosc", 0);
 
 	str = iniparser_getstring(ini, "Test description:pressfile", NULL);
 	strcpy(par->pressfile, str);
@@ -507,6 +511,8 @@ void read_inifile(modelparameters *par)
 		"Regression parameters:rp_omega", 0);
     par->rp_lambda = iniparser_getboolean(ini,
 		"Regression parameters:rp_lambda", 0);
+	par->rp_cpt= iniparser_getboolean(ini,
+		"Regression parameters:rp_cpt", 0);
 
 	par->jac_S   = iniparser_getint(ini,
 		"Regression parameters derivatives:jac_S",  2);
@@ -538,6 +544,8 @@ void read_inifile(modelparameters *par)
 		"Regression parameters derivatives:jac_omega", 2);
     par->jac_lambda = iniparser_getint(ini,
 		"Regression parameters derivatives:jac_lambda",2);
+	par->jac_cpt = iniparser_getint(ini,
+		"Regression parameters derivatives:jac_cpt",2);
 
 	str = iniparser_getstring(ini, "Output:outfile", NULL);
 	strcpy(par->outfile, str);
@@ -583,7 +591,8 @@ void set_parameters(modelparameters *par)
 		par->rp_w2y +
 		par->rp_xf +
 		par->rp_omega +
-		par->rp_lambda;
+		par->rp_lambda +
+		par->rp_cpt;
 
 	if(par->nstehfest < 4 ||
 		par->nstehfest > 20 ||
@@ -681,6 +690,11 @@ void set_parameters(modelparameters *par)
 		par->jactype[i] = par->jac_lambda;
 		i++;
 	}
+	if(par->rp_cpt == 1){
+		par->partype[i] = EFFECTIVE_HEAT_CAPACITY;
+		par->jactype[i] = par->jac_cpt;
+		i++;
+	}
 
 	/******************** pointers to delta_pwf functions ********************/
 	par->dpwffcn[PWF]                       = dpwf;
@@ -695,6 +709,7 @@ void set_parameters(modelparameters *par)
 	par->dpwffcn[PWFDPTSL]                  = dpwfdptsl;
 	par->dpwffcn[PWFDPTSP]                  = dpwfdptsp;
 	par->dpwffcn[PWFICF]                    = dpwficf;
+	par->dTwf[TWF]                          = dTwf;
 
     /*************** pointers to interporosity flow functions ****************/
     par->f[PWFDPPSS]                  = fpss;
@@ -1421,6 +1436,10 @@ void print_par(FILE *file, double *x, double *ci, double **corr, int n,
 			fprintf(file, x[i] == 0.0 ? "\n" : "or +/- %4g%%\n" , ci[i]*100.0/fabs(x[i]));
 			break;
         case FRACTURE_HALF_LENGTH:
+			fprintf(file, "xf      = % 12g +/- %12g ", x[i], ci[i]);
+			fprintf(file, x[i] == 0.0 ? "\n" : "or +/- %4g%%\n" , ci[i]*100.0/fabs(x[i]));
+			break;
+		case EFFECTIVE_HEAT_CAPACITY:
 			fprintf(file, "xf      = % 12g +/- %12g ", x[i], ci[i]);
 			fprintf(file, x[i] == 0.0 ? "\n" : "or +/- %4g%%\n" , ci[i]*100.0/fabs(x[i]));
 			break;
