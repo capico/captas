@@ -17,6 +17,7 @@ dpwfdptsp    for double porosity infinite reservoir (S, C) transient interporosi
 dpwficf      for homogeneous infinite reservoir (S, C) infinite conductivity fractured well
 dpwffcf      for homogeneous infinite reservoir (S, C) finite conductivity fractured well
 dpwfle       for homogeneous anisotropic infinite reservoir (S, C) limited entry well
+dTwf         for homogeneous thermal infinite reservoir (S)
 */
 
 #include "dpwf.h"
@@ -33,5 +34,6 @@ dpwfle       for homogeneous anisotropic infinite reservoir (S, C) limited entry
 #include "dpwficf.h"
 #include "dpwffcf.h"
 #include "dpwfle.h"
+#include "dTwf.h"
 
 #endif

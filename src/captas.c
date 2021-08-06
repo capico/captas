@@ -1,6 +1,6 @@
 /*
 
- Computer Aided Pressure Transient Analysis (and Simulation?) – CAPTA(S?)
+ Computer Aided Pressure Transient Analysis (and Simulation?) ï¿½ CAPTA(S?)
      Copyright (C) 2013  Carlos E. Pico
 
     This program is free software: you can redistribute it and/or modify
@@ -553,6 +553,7 @@ void init_parameters(modelparameters *par)
 	par->dpwffcn[PWFICF]    = dpwficf;
 	par->dpwffcn[PWFFCF]    = dpwffcf;
 	par->dpwffcn[PWFLE]     = dpwfle;
+	par->dpwffcn[TWF]       = dTwf;
 
 	/*************** pointers to interporosity flow functions ****************/
 	for(i = 0; i <  NMODELS; i++){
