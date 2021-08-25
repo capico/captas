@@ -6,31 +6,28 @@
 #include <malloc.h>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_sf_expint.h>
-#include <gsl/gsl_sf_exp.h>
 
 #include "dTwf.h"
 
-/******************************* RADIAL FLOW *********************************/
+/******************* TEMPERATURE, DRAWDOWN, RADIAL FLOW **********************/
 /* References:
 *
-* Palabiyik, Y., Onur, M., Tureyen, O. I., & Cinar, M. (2016). 
-* Transient temperature behavior and analysis of single-phase liquid-water 
-* geothermal reservoirs during drawdown and buildup tests: Part I. 
-* Theory, new analytical and approximate solutions. 
-* Journal of Petroleum Science and Engineering, 146, 637–656. 
+* Palabiyik, Y., Onur, M., Tureyen, O. I., & Cinar, M. (2016).
+* Transient temperature behavior and analysis of single-phase liquid-water
+* geothermal reservoirs during drawdown and buildup tests: Part I.
+* Theory, new analytical and approximate solutions.
+* Journal of Petroleum Science and Engineering, 146, 637–656.
 * https://doi.org/10.1016/j.petrol.2016.08.003
 */
 
 
 /**
-* delta Twf (temeprature drop per unit constant flow rate) function 
-* for a infinite homogeneous reservoir with skin factor. 
-8 Skin factor represented using the equivalent radius
-* rws = rw*exp(-S).
+* delta Twf (temperature drop per unit constant flow rate) function
+* for a infinite homogeneous reservoir with skin factor.
 */
-double dTwfcl(const modelparameters *p, double t)
+double dTwf(const modelparameters *p, double t)
 {
-    double a, b, f, d;
+    double a, b, cpR, f, d;
     double k, S, cpt;
 
     gsl_set_error_handler_off();
@@ -38,11 +35,23 @@ double dTwfcl(const modelparameters *p, double t)
     k   = p->rpval[PERMEABILITY];
     S   = p->rpval[SKIN_FACTOR];
     cpt = p->rpval[EFFECTIVE_HEAT_CAPACITY];
-    a   = (p->C2 * p->qB * p->mu) / (k * p->h);
-    b   = (pow(p->rw, 2.0) * p->phi * p->ct * rp->mu * p->ct) / (4.0 * k * p->C1);
-    f   = (p->phi * p->rhosc / p->B * p->cp) / cpt * (p->ejt + 1 / (p->rhosc / p->B * p->cp)) - p->ejt;
-    d   = (p->phi * p->rhosc / p->B * p->cp * p->ct) / p->cp / 2 * a;
 
-    return - a * 0.5 * (-p->ejt * (gsl_sf_expint_E1(b / t) + 2 * S) - f * gsl_sf_expint_E1(b / t - d));
+    a   = (p->C2 * p->qB * p->mu) / (k * p->h);
+    b   = (p->rw * p->rw * p->phi * p->ct * p->mu ) / (4.0 * k * p->C1);
+    cpR = (p->rhosc / p->B) * p->cp / cpt;
+    f   = p->phi * cpR * (p->ejt + 1.0 / (p->rhosc * p->cp / p->B)) - p->ejt;
+    d   = (p->phi * cpR * p->ct)  * a * 0.5;
+
+    return -0.5*a*( -p->ejt*(gsl_sf_expint_E1(b/t) + 2.0*S) - f*gsl_sf_expint_E1(b/t + d) );
+
+}
+/*****************************************************************************/
+
+
+/**
+*/
+double dr_dTi(const modelparameters *p, double t)
+{
+	return -1.0;
 }
 /*****************************************************************************/
