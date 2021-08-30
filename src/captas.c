@@ -533,10 +533,11 @@ void init_parameters(modelparameters *par)
 	par->parnames[PERMEABILITY_RATIO]      = "krat";
 	par->parnames[PENETRATION_RATIO]       = "b";
 	par->parnames[MIDPOINT_ELEVATION]      = "zw",
-	par->parnames[EFFECTIVE_HEAT_CAPACITY] = "cpt";
+	par->parnames[EFFECTIVE_HEAT_CAPACITY] = "cpt",
+	par->parnames[INITIAL_TEMPERATURE]     = "Ti";
 
 	/******************** pointers to delta_pwf functions ********************/
-	for(i = 0; i <  NMODELS; i++){
+	for(i = 0; i <  NPMODELS; i++){
 		par->dpwffcn[i] = f_default;
 	}
 	par->dpwffcn[PWF]       = dpwf;
@@ -554,8 +555,10 @@ void init_parameters(modelparameters *par)
 	par->dpwffcn[PWFFCF]    = dpwffcf;
 	par->dpwffcn[PWFLE]     = dpwfle;
 
+	par->dTwffcn[TWF]       = dTwf;
+
 	/*************** pointers to interporosity flow functions ****************/
-	for(i = 0; i <  NMODELS; i++){
+	for(i = 0; i <  NPMODELS; i++){
 		par->f[i] = f_default;
 	}
 	par->f[PWFDPPSS]  = fpss;
@@ -628,6 +631,8 @@ void init_parameters(modelparameters *par)
 	par->dr_dx[PWFFCF][INITIAL_PRESSURE]   =
 	par->dr_dx[PWFLE][INITIAL_PRESSURE]    = dr_dpi;
 
+	par->dr_dx[TWF][INITIAL_TEMPERATURE]   = dr_dTi;
+
 	par->dr_dx[PWFT][INITIAL_PRESSURE]     = drt_dpi;
 	/*************************************************************************/
 
@@ -672,12 +677,16 @@ void read_inifile(modelparameters *par)
 	par->units    = iniparser_getint(ini, "Units system:units",        OILFIELD);
 	par->testtype = iniparser_getint(ini, "Test description:testtype", DRAWDOWN);
 
-	par->phi = iniparser_getdouble(ini, "Test description:phi",  0.0);
-	par->B   = iniparser_getdouble(ini, "Test description:B",    0.0);
-	par->mu  = iniparser_getdouble(ini, "Test description:mu",   0.0);
-	par->h   = iniparser_getdouble(ini, "Test description:h",    0.0);
-	par->rw  = iniparser_getdouble(ini, "Test description:rw",   0.0);
-	par->ct  = iniparser_getdouble(ini, "Test description:ct",   0.0);
+	par->phi     = iniparser_getdouble(ini, "Test description:phi",    0.0);
+	par->B       = iniparser_getdouble(ini, "Test description:B",      0.0);
+	par->mu      = iniparser_getdouble(ini, "Test description:mu",     0.0);
+	par->h       = iniparser_getdouble(ini, "Test description:h",      0.0);
+	par->rw      = iniparser_getdouble(ini, "Test description:rw",     0.0);
+	par->ct      = iniparser_getdouble(ini, "Test description:ct",     0.0);
+	par->ejt     = iniparser_getdouble(ini, "Test description:ejt",    0.0);
+	par->rhosc   = iniparser_getdouble(ini, "Test description:rhosc",  0.0);
+	par->cp      = iniparser_getdouble(ini, "Test description:cp",     0.0);
+
 
 	/* values */
     for(i = 0; i < NPARAMETERS; i++){
@@ -711,6 +720,10 @@ void read_inifile(modelparameters *par)
 	str = iniparser_getstring(ini, "Test description:pressfile", NULL);
 	strcpy(par->pressfile, str);
 	par->presssize = iniparser_getint(ini, "Test description:presssize", 0);
+
+//    str = iniparser_getstring(ini, "Test description:tempfile", NULL);
+//	strcpy(par->tempfile, str);
+//	par->tempsize = iniparser_getint(ini, "Test description:tempsize", 0);
 
 	str = iniparser_getstring(ini, "Test description:ratefile",  NULL);
 	strcpy(par->ratefile, str);

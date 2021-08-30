@@ -3,8 +3,10 @@
 
 #define LENGTHFN    64  // file name length
 
-#define NMODELS     14  // number of wellbore/reservoir models
-#define NPARAMETERS 20  // total number of parameters
+#define NPMODELS    14  // number of wellbore/reservoir p models
+#define NTMODELS    1   // number of wellbore/reservoir T models
+#define NMODELS     (NPMODELS + NTMODELS)
+#define NPARAMETERS 21  // total number of parameters
 
 /* reservoir/well-bore parameters for regression */
 #define PERMEABILITY                    0
@@ -27,6 +29,7 @@
 #define PENETRATION_RATIO               17
 #define MIDPOINT_ELEVATION              18
 #define EFFECTIVE_HEAT_CAPACITY         19
+#define INITIAL_TEMPERATURE             20
 
 typedef struct
 {
@@ -81,10 +84,11 @@ typedef struct
 	double sign;
 
 	/* dpwf functions */
-	double (*dpwffcn[NMODELS])();
+	double (*dpwffcn[NPMODELS])();
+	double (*dTwffcn[NTMODELS])();
 
 	/* interporosity flow functions for double porosity */
-	double (*f[NMODELS])();
+	double (*f[NPMODELS])();
 
 	/* dpwf partial derivatives */
 	double (*dr_dx[NMODELS][NPARAMETERS])();

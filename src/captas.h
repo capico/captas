@@ -8,10 +8,10 @@
 #define PRINT		0
 
 /* type of derivatives in the jacobian matrix */
-#define ANALYTICAL	 0
-#define FORWARD		+1
-#define BACKWARD	-1
-#define CENTRAL	     2
+#define ANALYTICAL       0
+#define FORWARD         +1
+#define BACKWARD        -1
+#define CENTRAL          2
 
 #define OFF          0
 #define ON           1
@@ -25,10 +25,10 @@
 #define ANP          1
 
 /* reservoir/well-bore models */
-#define PWF			0
+#define PWF         0
 #define PWFT	    1
-#define PWFNFOB		2
-#define PWFCPOB		3
+#define PWFNFOB     2
+#define PWFCPOB     3
 #define PWFF        4
 #define PWFC        5
 #define PWFCL       6
@@ -39,20 +39,22 @@
 #define PWFICF      11
 #define PWFFCF      12
 #define PWFLE       13
+#define TWF         14
 
 /* test type */
-#define MULTIRATE			0
-#define DRAWDOWN			1
-#define BUILDUP				2
-#define INJECTION			3
-#define FALLOFF				4
-#define MULTIRATE_BUILDUP	5
-#define MULTIRATE_DRAWDOWN	6
+#define MULTIRATE               0
+#define DRAWDOWN                1
+#define BUILDUP	                2
+#define INJECTION               3
+#define FALLOFF                 4
+#define MULTIRATE_BUILDUP       5
+#define MULTIRATE_DRAWDOWN      6
+#define TMP                     7
 
 /* unit conversion factors */
-#define C1_ANP			0.0003484228
-#define C2_ANP			19.032784
-#define C3_ANP		    0.1591549430919
+#define C1_ANP          0.0003484228
+#define C2_ANP          19.032784
+#define C3_ANP          0.1591549430919
 
 #define C1_OILFIELD     0.00026367864
 #define C2_OILFIELD     141.20546
