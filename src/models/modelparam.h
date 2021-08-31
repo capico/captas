@@ -30,7 +30,7 @@
 #define MIDPOINT_ELEVATION              18
 #define EFFECTIVE_HEAT_CAPACITY         19
 #define INITIAL_TEMPERATURE             20
-#define JOULE_THOMSON_EFFECT            21
+#define COEFFICIENT_JOULE_THOMSON       21
 
 typedef struct
 {
@@ -63,7 +63,6 @@ typedef struct
 		ct,     // total compressibility
 		rw,     // wellbore radius
 		h,      // formation thickness
-		ejt,    // joule-thomson coefficient
 		rhosc,  // density at standard conditions
 		cp;     // specific heat capacity
 

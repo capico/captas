@@ -535,7 +535,7 @@ void init_parameters(modelparameters *par)
 	par->parnames[MIDPOINT_ELEVATION]      = "zw",
 	par->parnames[EFFECTIVE_HEAT_CAPACITY] = "cpt",
 	par->parnames[INITIAL_TEMPERATURE]     = "Ti",
-	par->parnames[JOULE_THOMSON_EFFECT]    = "ejt";
+	par->parnames[COEFFICIENT_JOULE_THOMSON]    = "ejt";
 
 	/******************** pointers to delta_pwf functions ********************/
 	for(i = 0; i <  NPMODELS; i++){
