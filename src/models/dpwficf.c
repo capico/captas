@@ -50,12 +50,13 @@ double dpwficfbar(const void *parameters, double u)
 	S   = p->rpval[SKIN_FACTOR];
 	C   = p->rpval[WELLBORE_STORAGE];
 	xf  = p->rpval[FRACTURE_HALF_LENGTH];
+    phi = p->rpval[POROSITY];
 
     xD  = 0.732; // for infinite conductivity behavior
 
     a   = (p->qB * p->mu * p->C2)/ (p->h * k);
-    b   = (p->phi * p->mu * p->ct * xf * xf) / (k * p->C1);
-    CD  = (C * p->C3) / (p->phi * p->h  * p->ct * xf * xf);
+    b   = (phi * p->mu * p->ct * xf * xf) / (k * p->C1);
+    CD  = (C * p->C3) / (phi * p->h  * p->ct * xf * xf);
     uD  = u * b;
 
     lim_1 = sqrt(uD) * (1.0 - xD);
@@ -129,12 +130,13 @@ double ddpwficf_dSbar(const void *parameters, double u)
 	S   = p->rpval[SKIN_FACTOR];
 	C   = p->rpval[WELLBORE_STORAGE];
 	xf  = p->rpval[FRACTURE_HALF_LENGTH];
+    phi = p->rpval[POROSITY];
 
     xD  = 0.732; // for infinite conductivity behavior
 
     a   = (p->qB * p->mu * p->C2)/ (p->h * k);
-    b   = (p->phi * p->mu * p->ct * xf * xf) / (k * p->C1);
-    CD  = (C * p->C3) / (p->phi * p->h  * p->ct * xf * xf);
+    b   = (phi * p->mu * p->ct * xf * xf) / (k * p->C1);
+    CD  = (C * p->C3) / (phi * p->h  * p->ct * xf * xf);
     uD  = u * b;
 
     lim_1 = sqrt(uD) * (1.0 - xD);

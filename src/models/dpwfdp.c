@@ -40,13 +40,14 @@ double dpwfdpbar(const void *parameters, double u)
 	C      = p->rpval[WELLBORE_STORAGE];
 	omega  = p->rpval[OMEGA];
 	lambda = p->rpval[LAMBDA];
+    phi = p->rpval[POROSITY];
 
     rws     = p->rw*exp(-S);
     lambdas = lambda*exp(-2.0*S);
 
     a   = (p->qB * p->mu * p->C2)/ (p->h * k);
-    b   = (p->phi * p->mu * p->ct * rws * rws) / (k * p->C1);
-    CD  = (C * p->C3) / (p->phi * p->h  * p->ct * rws * rws);
+    b   = (phi * p->mu * p->ct * rws * rws) / (k * p->C1);
+    CD  = (C * p->C3) / (phi * p->h  * p->ct * rws * rws);
 
     uD  = u * b;
     f   = (p->f)[p->model](uD, omega, lambdas);

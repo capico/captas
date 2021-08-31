@@ -535,7 +535,8 @@ void init_parameters(modelparameters *par)
 	par->parnames[MIDPOINT_ELEVATION]      = "zw",
 	par->parnames[EFFECTIVE_HEAT_CAPACITY] = "cpt",
 	par->parnames[INITIAL_TEMPERATURE]     = "Ti",
-	par->parnames[COEFFICIENT_JOULE_THOMSON]    = "ejt";
+	par->parnames[COEFFICIENT_JOULE_THOMSON]  = "ejt",
+	par->parnames[POROSITY]                = "phi";
 
 	/******************** pointers to delta_pwf functions ********************/
 	for(i = 0; i <  NPMODELS; i++){
@@ -678,7 +679,6 @@ void read_inifile(modelparameters *par)
 	par->units    = iniparser_getint(ini, "Units system:units",        OILFIELD);
 	par->testtype = iniparser_getint(ini, "Test description:testtype", DRAWDOWN);
 
-	par->phi     = iniparser_getdouble(ini, "Test description:phi",    0.0);
 	par->B       = iniparser_getdouble(ini, "Test description:B",      0.0);
 	par->mu      = iniparser_getdouble(ini, "Test description:mu",     0.0);
 	par->h       = iniparser_getdouble(ini, "Test description:h",      0.0);

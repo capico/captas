@@ -46,12 +46,13 @@ double dpwfrectbar(const void *parameters, double u)
     w2x = p->rpval[DISTANCE_TO_FAULT_2_X];
     w1y = p->rpval[DISTANCE_TO_FAULT_1_Y];
     w2y = p->rpval[DISTANCE_TO_FAULT_2_Y];
+    phi = p->rpval[POROSITY];
 
     rws = p->rw*exp(-S);
     a   = (p->qB * p->mu * p->C2) / (p->h * k);
-    b   = (p->phi * p->mu * p->ct * rws * rws) / (k * p->C1);
-    c   = (p->phi * p->mu * p->ct) / (k * p->C1);
-    CD  = (C * p->C3) / (p->phi * p->h  * p->ct * rws * rws);
+    b   = (phi * p->mu * p->ct * rws * rws) / (k * p->C1);
+    c   = (phi * p->mu * p->ct) / (k * p->C1);
+    CD  = (C * p->C3) / (phi * p->h  * p->ct * rws * rws);
 
     aux0  = (u*b);
     numer = gsl_sf_bessel_K0(sqrt(aux0));

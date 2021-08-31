@@ -47,6 +47,7 @@ double dpwflebar(const void *parameters, double u)
 	krat = p->rpval[PERMEABILITY_RATIO];
 	b    = p->rpval[PENETRATION_RATIO];
 	zw   = p->rpval[MIDPOINT_ELEVATION];
+	phi = p->rpval[POROSITY];
 
 	rws  = p->rw*exp(-S);
 	hD   = (p->h  /rws) * sqrt(krat);
@@ -56,8 +57,8 @@ double dpwflebar(const void *parameters, double u)
 	zwD  = (zw/rws) * sqrt(krat);
 
 	a   = (p->qB * p->mu * p->C2)/ (p->h * k);
-	d   = (p->phi * p->mu * p->ct * rws * rws) / (k * p->C1);
-	CD  = (C * p->C3) / (p->phi * p->h  * p->ct * rws * rws);
+	d   = (phi * p->mu * p->ct * rws * rws) / (k * p->C1);
+	CD  = (C * p->C3) / (phi * p->h  * p->ct * rws * rws);
 	uD  = u * d;
 
 	n     = 1;

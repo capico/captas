@@ -38,12 +38,13 @@ double dpwfcpobbar(const void *parameters, double u)
 	S   = p->rpval[SKIN_FACTOR];
 	C   = p->rpval[WELLBORE_STORAGE];
 	re  = p->rpval[EXTERNAL_RADIUS];
+    phi = p->rpval[POROSITY];
 
     rws = p->rw*exp(-S);
     a   = (p->qB * p->mu * p->C2) / (p->h * k);
-    b   = (p->phi * p->mu * p->ct * rws * rws) / (k * p->C1);
-    z   = (p->phi * p->mu * p->ct)             / (k * p->C1);
-    CD  = (C * p->C3) / (p->phi * p->h  * p->ct * rws * rws);
+    b   = (phi * p->mu * p->ct * rws * rws) / (k * p->C1);
+    z   = (phi * p->mu * p->ct)             / (k * p->C1);
+    CD  = (C * p->C3) / (phi * p->h  * p->ct * rws * rws);
 
     aux0  = (u * b);
     aux1  = sqrt(aux0);

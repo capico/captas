@@ -55,10 +55,11 @@ double dpwffcfbar(const void *parameters, double u)
 	C   = p->rpval[WELLBORE_STORAGE];
 	xf  = p->rpval[FRACTURE_HALF_LENGTH];
 	fc  = p->rpval[FRACTURE_CONDUCTIVITY];
+    phi = p->rpval[POROSITY];
 
     a   = (p->qB * p->mu * p->C2)/ (p->h * k);
-    b   = (p->phi * p->mu * p->ct * xf * xf) / (k * p->C1);
-    CD  = (C * p->C3) / (p->phi * p->h  * p->ct * xf * xf);
+    b   = (phi * p->mu * p->ct * xf * xf) / (k * p->C1);
+    CD  = (C * p->C3) / (phi * p->h  * p->ct * xf * xf);
     uD  = u * b;
 
     CfD     = fc / (k * xf);
@@ -145,10 +146,11 @@ double ddpwffcf_dSbar(const void *parameters, double u)
 	C   = p->rpval[WELLBORE_STORAGE];
 	xf  = p->rpval[FRACTURE_HALF_LENGTH];
 	fc  = p->rpval[FRACTURE_CONDUCTIVITY];
+    phi = p->rpval[POROSITY];
 
     a   = (p->qB * p->mu * p->C2)/ (p->h * k);
-    b   = (p->phi * p->mu * p->ct * xf * xf) / (k * p->C1);
-    CD  = (C * p->C3) / (p->phi * p->h  * p->ct * xf * xf);
+    b   = (phi * p->mu * p->ct * xf * xf) / (k * p->C1);
+    CD  = (C * p->C3) / (phi * p->h  * p->ct * xf * xf);
     uD  = u * b;
 
     CfD     = fc / (k * xf);

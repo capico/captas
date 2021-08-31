@@ -45,12 +45,13 @@ double dpwfcbar(const void *parameters, double u)
     C   = p->rpval[WELLBORE_STORAGE];
     w1  = p->rpval[DISTANCE_TO_FAULT_1];
     w2  = p->rpval[DISTANCE_TO_FAULT_2];
+    phi = p->rpval[POROSITY];
 
     rws = p->rw*exp(-S);
     a   = (p->qB * p->mu * p->C2) / (p->h * k);
-    b   = (p->phi * p->mu * p->ct * rws * rws) / (k * p->C1);
-    z   = (p->phi * p->mu * p->ct)             / (k * p->C1);
-    CD  = (C * p->C3) / (p->phi * p->h  * p->ct * rws * rws);
+    b   = (phi * p->mu * p->ct * rws * rws) / (k * p->C1);
+    z   = (phi * p->mu * p->ct)             / (k * p->C1);
+    CD  = (C * p->C3) / (phi * p->h  * p->ct * rws * rws);
 
     aux0  = u*b;
     aux1  = sqrt(aux0);
@@ -109,12 +110,13 @@ double ddpwfc_dkbar(const void *parameters, double u)
     C   = p->rpval[WELLBORE_STORAGE];
     w1  = p->rpval[DISTANCE_TO_FAULT_1];
     w2  = p->rpval[DISTANCE_TO_FAULT_2];
+    phi = p->rpval[POROSITY];
 
     rws = p->rw*exp(-S);
     a   = (p->qB * p->mu * p->C2) / (p->h * k);
-    b   = (p->phi * p->mu * p->ct * rws * rws) / (k * p->C1);
-    z   = (p->phi * p->mu * p->ct)             / (k * p->C1);
-    CD  = (C * p->C3) / (p->phi * p->h  * p->ct * rws * rws);
+    b   = (phi * p->mu * p->ct * rws * rws) / (k * p->C1);
+    z   = (phi * p->mu * p->ct)             / (k * p->C1);
+    CD  = (C * p->C3) / (phi * p->h  * p->ct * rws * rws);
 
     aux0  = u * b;
     aux1  = sqrt(aux0);
@@ -179,13 +181,14 @@ double ddpwfc_dCbar(const void *parameters, double u)
     C   = p->rpval[WELLBORE_STORAGE];
     w1  = p->rpval[DISTANCE_TO_FAULT_1];
     w2  = p->rpval[DISTANCE_TO_FAULT_2];
+    phi = p->rpval[POROSITY];
 
     rws = p->rw*exp(-S);
     a   = (p->qB * p->mu * p->C2) / (p->h * k);
-    b   = (p->phi * p->mu * p->ct * rws * rws) / (k * p->C1);
-    z   = (p->phi * p->mu * p->ct)             / (k * p->C1);
-    CD  = (C * p->C3) / (p->phi * p->h  * p->ct * rws * rws);
-    c   = (p->C3)     / (p->phi * p->h  * p->ct * rws * rws);
+    b   = (phi * p->mu * p->ct * rws * rws) / (k * p->C1);
+    z   = (phi * p->mu * p->ct)             / (k * p->C1);
+    CD  = (C * p->C3) / (phi * p->h  * p->ct * rws * rws);
+    c   = (p->C3)     / (phi * p->h  * p->ct * rws * rws);
 
     aux0 = u * b;
     aux1 = sqrt(aux0);
@@ -244,13 +247,14 @@ double ddpwfc_dSbar(const void *parameters, double u)
     C   = p->rpval[WELLBORE_STORAGE];
     w1  = p->rpval[DISTANCE_TO_FAULT_1];
     w2  = p->rpval[DISTANCE_TO_FAULT_2];
+    phi = p->rpval[POROSITY];
 
     rws = p->rw*exp(-S);
     a   = (p->qB * p->mu * p->C2) / (p->h * k);
-    b   = (p->phi * p->mu * p->ct * rws * rws)     / (k * p->C1);
-    y   = (p->phi * p->mu * p->ct * p->rw * p->rw) / (k * p->C1);
-    z   = (p->phi * p->mu * p->ct)                 / (k * p->C1);
-    w   = (C * p->C3) / (p->phi * p->h  * p->ct * p->rw * p->rw);
+    b   = (phi * p->mu * p->ct * rws * rws)     / (k * p->C1);
+    y   = (phi * p->mu * p->ct * p->rw * p->rw) / (k * p->C1);
+    z   = (phi * p->mu * p->ct)                 / (k * p->C1);
+    w   = (C * p->C3) / (phi * p->h  * p->ct * p->rw * p->rw);
 
     aux0 = u * b;
     aux1 = sqrt(aux0);
@@ -309,12 +313,13 @@ double ddpwfc_dw1bar(const void *parameters, double u)
     C   = p->rpval[WELLBORE_STORAGE];
     w1  = p->rpval[DISTANCE_TO_FAULT_1];
     w2  = p->rpval[DISTANCE_TO_FAULT_2];
+    phi = p->rpval[POROSITY];
 
     rws = p->rw*exp(-S);
     a   = (p->qB * p->mu * p->C2) / (p->h * k);
-    b   = (p->phi * p->mu * p->ct * rws * rws) / (k * p->C1);
-    z   = (p->phi * p->mu * p->ct)             / (k * p->C1);
-    CD  = (C * p->C3) / (p->phi * p->h  * p->ct * rws * rws);
+    b   = (phi * p->mu * p->ct * rws * rws) / (k * p->C1);
+    z   = (phi * p->mu * p->ct)             / (k * p->C1);
+    CD  = (C * p->C3) / (phi * p->h  * p->ct * rws * rws);
 
     aux0  = u*b;
     aux1  = sqrt(aux0);
@@ -378,12 +383,13 @@ double ddpwfc_dw2bar(const void *parameters, double u)
     C   = p->rpval[WELLBORE_STORAGE];
     w1  = p->rpval[DISTANCE_TO_FAULT_1];
     w2  = p->rpval[DISTANCE_TO_FAULT_2];
+    phi = p->rpval[POROSITY];
 
     rws = p->rw*exp(-S);
     a   = (p->qB * p->mu * p->C2) / (p->h * k);
-    b   = (p->phi * p->mu * p->ct * rws * rws) / (k * p->C1);
-    z   = (p->phi * p->mu * p->ct)             / (k * p->C1);
-    CD  = (C * p->C3) / (p->phi * p->h  * p->ct * rws * rws);
+    b   = (phi * p->mu * p->ct * rws * rws) / (k * p->C1);
+    z   = (phi * p->mu * p->ct)             / (k * p->C1);
+    CD  = (C * p->C3) / (phi * p->h  * p->ct * rws * rws);
 
     aux0  = u*b;
     aux1  = sqrt(aux0);

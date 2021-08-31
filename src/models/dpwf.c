@@ -38,11 +38,12 @@ double dpwfbar(const void *parameters, double u)
 	k   = p->rpval[PERMEABILITY];
 	S   = p->rpval[SKIN_FACTOR];
 	C   = p->rpval[WELLBORE_STORAGE];
+	phi = p->rpval[POROSITY];
 
 	rws = p->rw*exp(-S);
 	a   = (p->qB * p->mu * p->C2)/ (p->h * k);
-	b   = (p->phi * p->mu * p->ct * rws * rws) / (k * p->C1);
-	CD  = (C * p->C3) / (p->phi * p->h  * p->ct * rws * rws);
+	b   = (phi * p->mu * p->ct * rws * rws) / (k * p->C1);
+	CD  = (C * p->C3) / (phi * p->h  * p->ct * rws * rws);
 	uD  = (u * b);
 
 	uDsqrt = sqrt(uD);
@@ -70,12 +71,13 @@ double ddpwf_dkbar(const void *parameters, double u)
 	k   = p->rpval[PERMEABILITY];
 	S   = p->rpval[SKIN_FACTOR];
 	C   = p->rpval[WELLBORE_STORAGE];
+	phi = p->rpval[POROSITY];
 
 	rws = p->rw*exp(-S);
 	a   = (p->qB * p->mu * p->C2) / (p->h * k);
-	y   = (p->phi * p->mu * p->ct * rws * rws)/(p->C1);
+	y   = (phi * p->mu * p->ct * rws * rws)/(p->C1);
 	b   = y / k;
-	CD  = (C * p->C3) / (p->phi * p->h  * p->ct * rws * rws);
+	CD  = (C * p->C3) / (phi * p->h  * p->ct * rws * rws);
 	uD  = (u * b);
 
 	uDsqrt = sqrt(uD);
@@ -104,12 +106,13 @@ double ddpwf_dSbar(const void *parameters, double u)
 	k   = p->rpval[PERMEABILITY];
 	S   = p->rpval[SKIN_FACTOR];
 	C   = p->rpval[WELLBORE_STORAGE];
+	phi = p->rpval[POROSITY];
 
 	rws = p->rw*exp(-S);
 	a   = (p->qB * p->mu * p->C2) / (p->h * k);
-	y   = (p->phi * p->mu * p->ct * p->rw * p->rw) / (k * p->C1);
-	b   = (p->phi * p->mu * p->ct *   rws *   rws) / (k * p->C1);
-	z   = (C * p->C3) / (p->phi * p->h  * p->ct * p->rw * p->rw);
+	y   = (phi * p->mu * p->ct * p->rw * p->rw) / (k * p->C1);
+	b   = (phi * p->mu * p->ct *   rws *   rws) / (k * p->C1);
+	z   = (C * p->C3) / (phi * p->h  * p->ct * p->rw * p->rw);
 	uD  = (u * b);
 
 	uDsqrt = sqrt(uD);

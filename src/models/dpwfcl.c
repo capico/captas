@@ -36,11 +36,12 @@ double dpwfcl(const modelparameters *p, double t)
     S   = p->rpval[SKIN_FACTOR];
     w1  = p->rpval[DISTANCE_TO_FAULT_1];
     w2  = p->rpval[DISTANCE_TO_FAULT_2];
+    phi = p->rpval[POROSITY];
 
     rws = p->rw * gsl_sf_exp(-S);
     a   = (p->qB * p->mu * p->C2) / (p->h * k);
-    b   = (p->phi * p->mu * p->ct * rws * rws) / (4.0*k * p->C1 * t);
-    z   = (p->phi * p->mu * p->ct)             / (4.0*k * p->C1 * t);
+    b   = (phi * p->mu * p->ct * rws * rws) / (4.0*k * p->C1 * t);
+    z   = (phi * p->mu * p->ct)             / (4.0*k * p->C1 * t);
 
     while(fabs(delta) > epsilon) {
         wn = 2.0*(w1*i + w2*j);
@@ -83,11 +84,12 @@ double ddpwfcl_dk(const modelparameters *p, double t)
     S   = p->rpval[SKIN_FACTOR];
     w1  = p->rpval[DISTANCE_TO_FAULT_1];
     w2  = p->rpval[DISTANCE_TO_FAULT_2];
+    phi = p->rpval[POROSITY];
 
     rws = p->rw * gsl_sf_exp(-S);
     a   = (p->qB * p->mu * p->C2) / (p->h * k);
-    b   = (p->phi * p->mu * p->ct * rws * rws) / (4.0*k * p->C1 * t);
-    z   = (p->phi * p->mu * p->ct)             / (4.0*k * p->C1 * t);
+    b   = (phi * p->mu * p->ct * rws * rws) / (4.0*k * p->C1 * t);
+    z   = (phi * p->mu * p->ct)             / (4.0*k * p->C1 * t);
 
     while( (fabs(delta) > epsilon) && (fabs(delta1) > epsilon) ) {
         wn = 2.0*(w1*i + w2*j);
@@ -130,10 +132,11 @@ double ddpwfcl_dS(const modelparameters *p, double t)
 
     k   = p->rpval[PERMEABILITY];
     S   = p->rpval[SKIN_FACTOR];
+    phi = p->rpval[POROSITY];
 
     rws = p->rw * gsl_sf_exp(-S);
     a   = (p->qB * p->mu * p->C2) / (p->h * k);
-    b   = (p->phi * p->mu * p->ct * rws * rws) / (4.0*k * p->C1 * t);
+    b   = (phi * p->mu * p->ct * rws * rws) / (4.0*k * p->C1 * t);
 
     return a * gsl_sf_exp(-b);
 }
@@ -156,9 +159,10 @@ double ddpwfcl_dw1(const modelparameters *p, double t)
     k   = p->rpval[PERMEABILITY];
     w1  = p->rpval[DISTANCE_TO_FAULT_1];
     w2  = p->rpval[DISTANCE_TO_FAULT_2];
+    phi = p->rpval[POROSITY];
 
     a = (p->qB * p->mu * p->C2) / (p->h * k);
-    z = (p->phi * p->mu * p->ct) / (4.0*k * p->C1 * t);
+    z = (phi * p->mu * p->ct) / (4.0*k * p->C1 * t);
 
     while(fabs(delta) > epsilon) {
         wn = 2.0*(w1*i + w2*j);
@@ -200,9 +204,10 @@ double ddpwfcl_dw2(const modelparameters *p, double t)
     k   = p->rpval[PERMEABILITY];
     w1  = p->rpval[DISTANCE_TO_FAULT_1];
     w2  = p->rpval[DISTANCE_TO_FAULT_2];
+    phi = p->rpval[POROSITY];
 
     a = (p->qB * p->mu * p->C2) / (p->h * k);
-    z = (p->phi * p->mu * p->ct) / (4.0*k * p->C1 * t);
+    z = (phi * p->mu * p->ct) / (4.0*k * p->C1 * t);
 
     while(fabs(delta) > epsilon) {
         wn = 2.0*(w1*i + w2*j);

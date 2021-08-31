@@ -36,12 +36,13 @@ double dTwf(const modelparameters *p, double t)
     S   = p->rpval[SKIN_FACTOR];
     cpt = p->rpval[EFFECTIVE_HEAT_CAPACITY];
     ejt = p->rpval[COEFFICIENT_JOULE_THOMSON];
+    phi = p->rpval[POROSITY];
 
     a   = (p->C2 * p->qB * p->mu) / (k * p->h);
-    b   = (p->rw * p->rw * p->phi * p->ct * p->mu ) / (4.0 * k * p->C1);
+    b   = (p->rw * p->rw * phi * p->ct * p->mu ) / (4.0 * k * p->C1);
     cpR = (p->rhosc / p->B) * p->cp / cpt;
-    f   = p->phi * cpR * (ejt + 1.0 / (p->rhosc * p->cp / p->B)) - ejt;
-    d   = (p->phi * cpR * p->ct)  * a * 0.5;
+    f   = phi * cpR * (ejt + 1.0 / (p->rhosc * p->cp / p->B)) - ejt;
+    d   = (phi * cpR * p->ct)  * a * 0.5;
 
     return -0.5*a*( -ejt*(gsl_sf_expint_E1(b/t) + 2.0*S) - f*gsl_sf_expint_E1(b/t + d) );
 

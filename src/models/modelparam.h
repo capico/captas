@@ -31,6 +31,7 @@
 #define EFFECTIVE_HEAT_CAPACITY         19
 #define INITIAL_TEMPERATURE             20
 #define COEFFICIENT_JOULE_THOMSON       21
+#define POROSITY                        22
 
 typedef struct
 {
@@ -58,7 +59,6 @@ typedef struct
 	double
 		B,      // formation volume factor
 		qB,     // sand face flow rate
-		phi,    // porosity
 		mu,     // viscosity
 		ct,     // total compressibility
 		rw,     // wellbore radius
