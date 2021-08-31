@@ -1,6 +1,6 @@
 /*
 
- Computer Aided Pressure Transient Analysis (and Simulation?) – CAPTA(S?)
+ Computer Aided Pressure Transient Analysis (and Simulation?) ï¿½ CAPTA(S?)
      Copyright (C) 2013  Carlos E. Pico
 
     This program is free software: you can redistribute it and/or modify
@@ -534,7 +534,8 @@ void init_parameters(modelparameters *par)
 	par->parnames[PENETRATION_RATIO]       = "b";
 	par->parnames[MIDPOINT_ELEVATION]      = "zw",
 	par->parnames[EFFECTIVE_HEAT_CAPACITY] = "cpt",
-	par->parnames[INITIAL_TEMPERATURE]     = "Ti";
+	par->parnames[INITIAL_TEMPERATURE]     = "Ti",
+	par->parnames[JOULE_THOMSON_COEFFICIENT]    = "ejt";
 
 	/******************** pointers to delta_pwf functions ********************/
 	for(i = 0; i <  NPMODELS; i++){
@@ -683,7 +684,6 @@ void read_inifile(modelparameters *par)
 	par->h       = iniparser_getdouble(ini, "Test description:h",      0.0);
 	par->rw      = iniparser_getdouble(ini, "Test description:rw",     0.0);
 	par->ct      = iniparser_getdouble(ini, "Test description:ct",     0.0);
-	par->ejt     = iniparser_getdouble(ini, "Test description:ejt",    0.0);
 	par->rhosc   = iniparser_getdouble(ini, "Test description:rhosc",  0.0);
 	par->cp      = iniparser_getdouble(ini, "Test description:cp",     0.0);
 
