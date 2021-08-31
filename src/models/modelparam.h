@@ -30,6 +30,7 @@
 #define MIDPOINT_ELEVATION              18
 #define EFFECTIVE_HEAT_CAPACITY         19
 #define INITIAL_TEMPERATURE             20
+#define JOULE_THOMSON_EFFECT            21
 
 typedef struct
 {
