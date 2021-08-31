@@ -35,7 +35,7 @@ double dTwf(const modelparameters *p, double t)
     k   = p->rpval[PERMEABILITY];
     S   = p->rpval[SKIN_FACTOR];
     cpt = p->rpval[EFFECTIVE_HEAT_CAPACITY];
-    ejt = p->rpval[COEFFICIENT_JOULE_THOMSON];
+    ejt = p->rpval[JOULE_THOMSON_COEFFICIENT];
 
     a   = (p->C2 * p->qB * p->mu) / (k * p->h);
     b   = (p->rw * p->rw * p->phi * p->ct * p->mu ) / (4.0 * k * p->C1);
