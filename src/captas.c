@@ -1,7 +1,9 @@
 /*
 
- Computer Aided Pressure Transient Analysis (and Simulation?) – CAPTA(S?)
+ Computer Aided Pressure Transient Analysis (and Simulation?) â€“ CAPTA(S?)
      Copyright (C) 2013  Carlos E. Pico
+     Copyright (C) 2021  TNO
+     
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
