@@ -1,8 +1,23 @@
 #ifndef CAPTAS_H
 #define CAPTAS_H
 
+#define OFF          0
+#define ON           1
+
 #define LENGTENTRY	64	// max length of a inifile entry
 
+/* mode */
+#define REGRESSION	 0
+#define SIMULATION	 1
+
+#define NONINTERACTIVE  0
+#define INTERACTIVE     1
+
+/* units system */
+#define OILFIELD     0
+#define ANP          1
+
+/* type of jacobian */
 #define JACOBIAN	2
 #define RESIDUAL	1
 #define PRINT		0
@@ -13,16 +28,14 @@
 #define BACKWARD        -1
 #define CENTRAL          2
 
-#define OFF          0
-#define ON           1
-
-/* mode */
-#define REGRESSION	 0
-#define SIMULATION	 1
-
-/* units system */
-#define OILFIELD     0
-#define ANP          1
+/* test type */
+#define MULTIRATE               0
+#define DRAWDOWN                1
+#define BUILDUP	                2
+#define INJECTION               3
+#define FALLOFF                 4
+#define MULTIRATE_BUILDUP       5
+#define MULTIRATE_DRAWDOWN      6
 
 /* reservoir/well-bore models */
 #define PWF         0
@@ -39,17 +52,6 @@
 #define PWFICF      11
 #define PWFFCF      12
 #define PWFLE       13
-#define TWF         14
-
-/* test type */
-#define MULTIRATE               0
-#define DRAWDOWN                1
-#define BUILDUP	                2
-#define INJECTION               3
-#define FALLOFF                 4
-#define MULTIRATE_BUILDUP       5
-#define MULTIRATE_DRAWDOWN      6
-#define TMP                     7
 
 /* unit conversion factors */
 #define C1_ANP          0.0003484228
@@ -60,14 +62,18 @@
 #define C2_OILFIELD     141.20546
 #define C3_OILFIELD     0.89358869
 
+/* number of terms in the Stehfest algorithm */
 #define NSTEHFEST_DEFAULT 12
 
+/* differentiation interval */
 #define LDER_DEFAULT      0.1
 
+/* suitable step length for the finite-difference approximation of the jacobian */
 #define DX_DEFAULT        1.220703125000000e-004
 
 #include "models/models.h"
 
+/* exit messages of the non-linear least squares fitting function */
 const char *lm_nlsf_msg[] =
 {
 	"improper input parameters.",
@@ -128,7 +134,10 @@ void lm_nlsf(void fcn(), lmdatatype *data, void *modelpar, int m, int n,
 void print_par(FILE *file_name, double *x, double *ci, double **corr,
 			   int n, modelparameters *par);
 
-void write_outfile(modelparameters *par, lmdatatype *data, double *x,
+void write_par_outfile(modelparameters *par, lmdatatype *data, double *x,
+				   double *ci, double **corr);
+
+void write_mod_outfile(modelparameters *par, lmdatatype *data, double *x,
 				   double *ci, double **corr);
 
 #endif

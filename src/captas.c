@@ -1,7 +1,7 @@
 /*
 
- Computer Aided Pressure Transient Analysis (and Simulation?) – CAPTA(S?)
-     Copyright (C) 2013  Carlos E. Pico
+ Computer Aided Pressure Transient Analysis (and Simulation?) - CAPTA(S?)
+     Copyright (C) 2013  capico@lenep.uenf.br
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -205,10 +205,11 @@ int main(int argc, char *argv[])
 		dataSol.t[i] = data.t[i];
 	}
 
+
 	/*************************************************************************/
 	/**************************** plot windows *******************************/
 	/*************************************************************************/
-	if(par.plots){
+	if(par.plots != OFF){
 		hcartesian = gnuplot_init();
 		if(par.testtype != MULTIRATE){
 		    hsemilog   = gnuplot_init();
@@ -224,12 +225,12 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	if(par.plots){
-		printf("*** plots - data and model with initial guess ***\n");
+	if(par.plots != OFF){
 
 		gnuplot_set_xlabel(hcartesian, "t [hr]");
 		gnuplot_cmd(hcartesian, "set grid");
         gnuplot_cmd(hcartesian, "set terminal wxt enhanced background '#fff6af'");
+
 		if(par.testtype != MULTIRATE){
             gnuplot_set_xlabel(hsemilog, "{/Symbol D}t_e [hr]");
             gnuplot_set_xlabel(hloglog, "{/Symbol D}t [hr]");
@@ -265,7 +266,9 @@ int main(int argc, char *argv[])
 	/*************************************************************************/
 	/********************* wellbore pressure (data) **************************/
 	/*************************************************************************/
-	if(par.plots){
+	if((par.plots != OFF) && (par.mode == REGRESSION)){
+
+        printf("*** plots - data and model with initial guess ***\n");
 
 		gnuplot_setstyle(hcartesian, "points");
 		gnuplot_plot_xy(hcartesian, data.t, data.p, m, "p (data)");
@@ -290,7 +293,7 @@ int main(int argc, char *argv[])
 	/*************************************************************************/
 	/********************** wellbore pressure (model) ************************/
 	/*************************************************************************/
-	if(par.plots){
+	if(par.plots != OFF){
 
 		calc_pressure(&par, &dataSol);
 
@@ -311,105 +314,124 @@ int main(int argc, char *argv[])
             //gnuplot_plot_xy(hloglog, dataSol.dt, dataSol.derg,  m, "{/Symbol D}p / 2*{/Symbol D}p' (model)");
 		}
 	}
-	pressEnterToContinue();
 	/*************************************************************************/
 
+
+	if(par.interactive == INTERACTIVE)
+        pressEnterToContinue();
 
 	/*************************************************************************/
 	/*************** fitting by the Levenberg-Marquardt algorithm ************/
 	/*************************************************************************/
-	setxtomodel(x, n, &par);
-	totalfcneval = 0;
-	totaljaceval = 0;
-	mode = 1;
-	do{
-		start = clock();
+    if(par.mode == REGRESSION){
+        setxtomodel(x, n, &par);
+        totalfcneval = 0;
+        totaljaceval = 0;
+        mode = 1;
+        do {
+            start = clock();
 
-		/* solve the nonlinear least squares fitting problem */
-		lm_nlsf(resjacprn, &data, &par, m, n, x, ci, corr, fvec, fjac, tol,
-          &info, &nfev, &njev, &fnorm, mode);
+            /* solve the nonlinear least squares fitting problem */
+            lm_nlsf(resjacprn, &data, &par, m, n, x, ci, corr, fvec, fjac, tol,
+                    &info, &nfev, &njev, &fnorm, mode);
 
-		finish = clock();
-		duration += (double)(finish-start)/CLOCKS_PER_SEC;
+            finish = clock();
+            duration += (double)(finish-start)/CLOCKS_PER_SEC;
 
-		totalfcneval += nfev;
-		totaljaceval += njev;
-		printf("\n");
-		printf("Time: %f\n", duration);
-		printf("Final L2 norm: %.16E \n", fnorm);
-		printf("Exit message: %s \n", lm_nlsf_msg[info]);
-		printf("Number of calls to function: %d \n", totalfcneval);
-		printf("Number of calls to jacobian: %d \n", totaljaceval);
-		printf("\n");
+            totalfcneval += nfev;
+            totaljaceval += njev;
+            printf("\n");
+            printf("Time: %f\n", duration);
+            printf("Final L2 norm: %.16E \n", fnorm);
+            printf("Exit message: %s \n", lm_nlsf_msg[info]);
+            printf("Number of calls to function: %d \n", totalfcneval);
+            printf("Number of calls to jacobian: %d \n", totaljaceval);
+            printf("\n");
 
-		setmodeltox(x, n, &par);
+            setmodeltox(x, n, &par);
 
-		print_par(stderr, x, ci, corr, n, &par);
-		printf("\n\n");
+            print_par(stderr, x, ci, corr, n, &par);
+            printf("\n\n");
 
-		/*********************** wellbore pressure estimative ****************/
-		if(par.plots){
-			calc_pressure_drop(&par, &data);
+            /*********************** wellbore pressure estimative ****************/
+            if(par.plots != OFF) {
+                calc_pressure_drop(&par, &data);
 
-			gnuplot_resetplot(hcartesian);
-			gnuplot_setstyle(hcartesian, "points");
-			gnuplot_plot_xy(hcartesian, data.t, data.p, m, "p (data)");
+                gnuplot_resetplot(hcartesian);
+                gnuplot_setstyle(hcartesian, "points");
+                gnuplot_plot_xy(hcartesian, data.t, data.p, m, "p (data)");
 
-			if(par.testtype != MULTIRATE){
-                gnuplot_resetplot(hsemilog);
-                gnuplot_resetplot(hloglog);
+                if(par.testtype != MULTIRATE) {
+                    gnuplot_resetplot(hsemilog);
+                    gnuplot_resetplot(hloglog);
 
-                gnuplot_setstyle(hsemilog, "points");
-                gnuplot_setstyle(hloglog, "points");
+                    gnuplot_setstyle(hsemilog, "points");
+                    gnuplot_setstyle(hloglog, "points");
 
-                gnuplot_plot_xy(hsemilog, data.dte, data.p, m, "p (data)");
-                gnuplot_plot_xy(hloglog, data.dt, data.dp, m, "{/Symbol D}p (data)");
-                gnuplot_plot_xy(hloglog, data.dt, data.derl,  m, "{/Symbol D}p' (data)");
-                //gnuplot_plot_xy(hloglog, data.dt, data.derg,  m, "{/Symbol D}p / 2*{/Symbol D}p' (data)");
-			}
+                    gnuplot_plot_xy(hsemilog, data.dte, data.p, m, "p (data)");
+                    gnuplot_plot_xy(hloglog, data.dt, data.dp, m, "{/Symbol D}p (data)");
+                    gnuplot_plot_xy(hloglog, data.dt, data.derl,  m, "{/Symbol D}p' (data)");
+                    //gnuplot_plot_xy(hloglog, data.dt, data.derg,  m, "{/Symbol D}p / 2*{/Symbol D}p' (data)");
+                }
 
-			calc_pressure(&par, &dataSol);
+                calc_pressure(&par, &dataSol);
 
-			gnuplot_setstyle(hcartesian, "lines");
-			gnuplot_plot_xy(hcartesian, dataSol.t, dataSol.p, m, "p (model)");
+                gnuplot_setstyle(hcartesian, "lines");
+                gnuplot_plot_xy(hcartesian, dataSol.t, dataSol.p, m, "p (model)");
 
-			if(par.testtype != MULTIRATE){
-                calc_pressure_drop(&par, &dataSol);
-                calc_log_derivative(&par, &dataSol);
+                if(par.testtype != MULTIRATE) {
+                    calc_pressure_drop(&par, &dataSol);
+                    calc_log_derivative(&par, &dataSol);
 
-                gnuplot_setstyle(hsemilog, "lines");
-                gnuplot_setstyle(hloglog, "lines");
+                    gnuplot_setstyle(hsemilog, "lines");
+                    gnuplot_setstyle(hloglog, "lines");
 
-                gnuplot_plot_xy(hsemilog, dataSol.dte, dataSol.p, m, "p (model)");
-                gnuplot_plot_xy(hloglog, dataSol.dt, dataSol.dp, m, "{/Symbol D}p (model)");
-                gnuplot_plot_xy(hloglog, dataSol.dt, dataSol.derl, m, "{/Symbol D}p' (model)");
-                //gnuplot_plot_xy(hloglog, dataSol.dt, dataSol.derg,  m, "{/Symbol D}p / 2*{/Symbol D}p' (model)");
-			}
-		}
-		/*************************************************************************/
+                    gnuplot_plot_xy(hsemilog, dataSol.dte, dataSol.p, m, "p (model)");
+                    gnuplot_plot_xy(hloglog, dataSol.dt, dataSol.dp, m, "{/Symbol D}p (model)");
+                    gnuplot_plot_xy(hloglog, dataSol.dt, dataSol.derl, m, "{/Symbol D}p' (model)");
+                    //gnuplot_plot_xy(hloglog, dataSol.dt, dataSol.derg,  m, "{/Symbol D}p / 2*{/Symbol D}p' (model)");
+                }
+            }
+            /*************************************************************************/
 
-		printf("Acceptable Estimative? (1 = yes, 2 = change mode (mode = %d), otherwise = no) ", mode);
-		if (scanf("%d", &ans) == 0){
-            scanf("%*s");
-            ans = 0;
-		}
-		//info = 0;
+            if(par.interactive == INTERACTIVE){
+                printf("Acceptable Estimative? (1 = yes (exit), otherwise = more iterations): ", mode);
+                if (scanf("%d", &ans) == 0) {
+                    scanf("%*s");
+                    ans = 0;
+                }
+            }
+            else{
+                ans = 1;
+            }
 
-		if(ans == 2)
-			mode = (mode == 1) ? 2 : 1;
-	}
-	while(ans != 1);
+            //info = 0;
+
+            if(ans != 1)
+                mode = (mode == 1) ? 2 : 1;
+
+        } while(ans != 1);
+
+    }
 	/*************************************************************************/
 	/*************************************************************************/
 
 	//pressEnterToContinue();
 
 	/*************************************************************************/
-	write_outfile(&par, &dataSol, x, ci, corr);
+	calc_pressure(&par, &dataSol);
+	if(par.testtype != MULTIRATE){
+            calc_plotting_abscissas(&par, &dataSol);
+            calc_pressure_drop(&par, &dataSol);
+            calc_log_derivative(&par, &dataSol);
+    }
+	write_par_outfile(&par, &dataSol, x, ci, corr);
+	write_mod_outfile(&par, &dataSol, x, ci, corr);
 	/*************************************************************************/
 
+
 	/*************************************************************************/
-	if(par.plots){
+	if(par.plots != OFF){
 		gnuplot_close(hcartesian);
 		if(par.testtype != MULTIRATE){
 			gnuplot_close(hsemilog);
@@ -417,6 +439,7 @@ int main(int argc, char *argv[])
 		}
 	}
 	/*************************************************************************/
+
 
 	return 0;
 }
@@ -509,9 +532,9 @@ void init_parameters(modelparameters *par)
 	int i, j;
 
 	for(i = 0; i < NPARAMETERS; i++){
-		par->rpsta[i] = OFF;
-		par->rpjac[i] = CENTRAL;
-		par->rpdx[i]  = DX_DEFAULT;
+		par->rpsta[i] = OFF;        // status
+		par->rpjac[i] = CENTRAL;    // type of numerical jacobian
+		par->rpdx[i]  = DX_DEFAULT; // dx for numerical diferentiation
 	}
 
 	par->parnames[PERMEABILITY]            = "k";
@@ -532,46 +555,44 @@ void init_parameters(modelparameters *par)
 	par->parnames[FRACTURE_CONDUCTIVITY]   = "fc";
 	par->parnames[PERMEABILITY_RATIO]      = "krat";
 	par->parnames[PENETRATION_RATIO]       = "b";
-	par->parnames[MIDPOINT_ELEVATION]      = "zw",
-	par->parnames[EFFECTIVE_HEAT_CAPACITY] = "cpt",
-	par->parnames[INITIAL_TEMPERATURE]     = "Ti";
+	par->parnames[MIDPOINT_ELEVATION]      = "zw";
+
 
 	/******************** pointers to delta_pwf functions ********************/
-	for(i = 0; i <  NPMODELS; i++){
+	for(i = 0; i <  NMODELS; i++){
 		par->dpwffcn[i] = f_default;
 	}
-	par->dpwffcn[PWF]       = dpwf;
-	par->dpwffcn[PWFT]      = dpwf;
-	par->dpwffcn[PWFNFOB]   = dpwfnfob;
-	par->dpwffcn[PWFCPOB]   = dpwfcpob;
-	par->dpwffcn[PWFF]      = dpwff;
-	par->dpwffcn[PWFC]      = dpwfc;
-	par->dpwffcn[PWFCL]     = dpwfcl;
-	par->dpwffcn[PWFRECT]   = dpwfrect;
-	par->dpwffcn[PWFDPPSS]  = dpwfdppss;
-	par->dpwffcn[PWFDPTSL]  = dpwfdptsl;
-	par->dpwffcn[PWFDPTSP]  = dpwfdptsp;
-	par->dpwffcn[PWFICF]    = dpwficf;
-	par->dpwffcn[PWFFCF]    = dpwffcf;
-	par->dpwffcn[PWFLE]     = dpwfle;
+	par->dpwffcn[PWF]       = dpwf;      // radial homogeneous infinite (S and C)
+	par->dpwffcn[PWFT]      = dpwf;      // radial homogeneous infinite (ln(k), ln(C), ...)
+	par->dpwffcn[PWFNFOB]   = dpwfnfob;  // homogeneous circular no-flow outer boundary (S and C)
+	par->dpwffcn[PWFCPOB]   = dpwfcpob;  // homogeneous circular constant pressure outer boundary (S and C)
+	par->dpwffcn[PWFF]      = dpwff;     // homogeneous reservoir, linear sealing fault (S and C)
+	par->dpwffcn[PWFC]      = dpwfc;     // homogeneous reservoir, parallel linear sealing faults (S and C)
+	par->dpwffcn[PWFCL]     = dpwfcl;    // homogeneous reservoir, parallel linear sealing faults (S, C = 0)
+	par->dpwffcn[PWFRECT]   = dpwfrect;  // homogeneous rectangular reservoir (S, C)
+	par->dpwffcn[PWFDPPSS]  = dpwfdppss; // double porosity infinite reservoir (S, C) pss
+	par->dpwffcn[PWFDPTSL]  = dpwfdptsl; // double porosity infinite reservoir (S, C) transient slabs
+	par->dpwffcn[PWFDPTSP]  = dpwfdptsp; // double porosity infinite reservoir (S, C) transient spheres
+	par->dpwffcn[PWFICF]    = dpwficf;   // infinite reservoir (S,C) with infinite conductivity fractured well
+	par->dpwffcn[PWFFCF]    = dpwffcf;   // infinite reservoir (S,C) with finite conductivity fractured well
+	par->dpwffcn[PWFLE]     = dpwfle;    // homogeneous anisotropic infinite reservoir (S, C) limited entry well
 
-	par->dTwffcn[TWF]       = dTwf;
 
 	/*************** pointers to interporosity flow functions ****************/
-	for(i = 0; i <  NPMODELS; i++){
+	for(i = 0; i <  NMODELS; i++){
 		par->f[i] = f_default;
 	}
-	par->f[PWFDPPSS]  = fpss;
-	par->f[PWFDPTSL]  = ftsl;
-	par->f[PWFDPTSP]  = ftsp;
+	par->f[PWFDPPSS]  = fpss;   // pseudo steady state
+	par->f[PWFDPTSL]  = ftsl;   // transient, slabs
+	par->f[PWFDPTSP]  = ftsp;   // transient, spheres
 
-	/********* pointers to the derivatives of the delta_pwf functions ********/
-	for(i = 0; i <  NMODELS; i++)
-	{
-		for(j = 0; j < NPARAMETERS; j++) {
+	/*** pointers to the analytical derivatives of the delta_pwf functions ***/
+	for(i = 0; i <  NMODELS; i++){
+		for(j = 0; j < NPARAMETERS; j++){
 			par->dr_dx[i][j] = f_default;
 		}
 	}
+	/* derivatives of the residual function with respect to parameter X */
 	par->dr_dx[PWF][PERMEABILITY]          = ddpwf_dk;
 	par->dr_dx[PWF][WELLBORE_STORAGE]      = ddpwf_dC;
 	par->dr_dx[PWF][SKIN_FACTOR]           = ddpwf_dS;
@@ -631,11 +652,10 @@ void init_parameters(modelparameters *par)
 	par->dr_dx[PWFFCF][INITIAL_PRESSURE]   =
 	par->dr_dx[PWFLE][INITIAL_PRESSURE]    = dr_dpi;
 
-	par->dr_dx[TWF][INITIAL_TEMPERATURE]   = dr_dTi;
-
 	par->dr_dx[PWFT][INITIAL_PRESSURE]     = drt_dpi;
 	/*************************************************************************/
 
+	/* units conversion factors */
 	par->C1  = C1_OILFIELD;
 	par->C2  = C2_OILFIELD;
 	par->C3  = C3_OILFIELD;
@@ -673,9 +693,10 @@ void read_inifile(modelparameters *par)
 	//iniparser_dump_ini(ini, stdout);
 
 	/********************* reading data in ini file ********************/
-	par->mode     = iniparser_getint(ini, "Program mode:mode",         REGRESSION);
-	par->units    = iniparser_getint(ini, "Units system:units",        OILFIELD);
-	par->testtype = iniparser_getint(ini, "Test description:testtype", DRAWDOWN);
+	par->mode        = iniparser_getint(ini, "Program mode:mode",         REGRESSION);
+	par->interactive = iniparser_getint(ini, "Program mode:interactive",  INTERACTIVE);
+	par->units       = iniparser_getint(ini, "Units system:units",        OILFIELD);
+	par->testtype    = iniparser_getint(ini, "Test description:testtype", DRAWDOWN);
 
 	par->phi     = iniparser_getdouble(ini, "Test description:phi",    0.0);
 	par->B       = iniparser_getdouble(ini, "Test description:B",      0.0);
@@ -683,10 +704,6 @@ void read_inifile(modelparameters *par)
 	par->h       = iniparser_getdouble(ini, "Test description:h",      0.0);
 	par->rw      = iniparser_getdouble(ini, "Test description:rw",     0.0);
 	par->ct      = iniparser_getdouble(ini, "Test description:ct",     0.0);
-	par->ejt     = iniparser_getdouble(ini, "Test description:ejt",    0.0);
-	par->rhosc   = iniparser_getdouble(ini, "Test description:rhosc",  0.0);
-	par->cp      = iniparser_getdouble(ini, "Test description:cp",     0.0);
-
 
 	/* values */
     for(i = 0; i < NPARAMETERS; i++){
@@ -720,10 +737,6 @@ void read_inifile(modelparameters *par)
 	str = iniparser_getstring(ini, "Test description:pressfile", NULL);
 	strcpy(par->pressfile, str);
 	par->presssize = iniparser_getint(ini, "Test description:presssize", 0);
-
-//    str = iniparser_getstring(ini, "Test description:tempfile", NULL);
-//	strcpy(par->tempfile, str);
-//	par->tempsize = iniparser_getint(ini, "Test description:tempsize", 0);
 
 	str = iniparser_getstring(ini, "Test description:ratefile",  NULL);
 	strcpy(par->ratefile, str);
@@ -910,6 +923,7 @@ this function calculates the logarithmic derivative of the pressure drop dp
 with respect to the multi-rate equivalent time dte in the structure "data",
 using the parameters in the structure "par". The logarithmic derivative is
 stored in data.derl and the group dp/(2*derl) in data.derg.
+The logarithmic derivative is computed as derl = (1/dp)*dln(dp)/dln(dt). 
 */
 void calc_log_derivative(modelparameters *par, lmdatatype *data)
 {
@@ -923,20 +937,42 @@ void calc_log_derivative(modelparameters *par, lmdatatype *data)
 
 		/************************ dln(dp)/dln(dt) ****************************/
 		if(i == 0){
+
 			drigth = log(data->dte[i+j]/data->dte[i]);
 			while(drigth < par->Lder && (i + j) < (par->m - 1)){
 				j++;
 				drigth = log(data->dte[i+j]/data->dte[i]);
 			}
-			data->derg[i] = log(data->dp[i+j]/data->dp[i])/drigth;
+			if(data->dte[i] == 0 || data->dp[i] == 0){
+				data->derl[i] = 0.0;
+				data->derg[i] = 0.0;
+			}
+			else{
+				//data->derg[i] = ( (data->dp[i+j]-data->dp[i])
+                //     / (data->dte[i+j]-data->dte[i]) ) / data->dp[i];
+				data->derg[i] = log(data->dp[i+j]/data->dp[i])/drigth;
+				
+				data->derl[i] = data->derg[i] * data->dp[i];
+				data->derg[i] = 0.5 / data->derg[i];
+			}
 		}
 		else if(i == (par->m - 1)){
+
 			dleft = log(data->dte[i]/data->dte[i-k]);
 			while(dleft < par->Lder && (i - k) > 0){
 				k++;
 				dleft = log(data->dte[i]/data->dte[i-k]);
 			}
-			data->derg[i] = log(data->dp[i]/data->dp[i-k])/dleft;
+			/* better (smoother) results at the endpoint using t*dp/dt ? */
+			//data->derg[i] = ( data->dte[i] * (data->dp[i] - data->dp[i-k])
+			//	/ (data->dte[i] - data->dte[i-k]) ) / data->dp[i];
+            //data->derg[i] = log(data->dp[i]/data->dp[i-k])/dleft;
+            data->derg[i] = 0.5*( data->dte[i] * (data->dp[i] - data->dp[i-k])
+				/ (data->dte[i] - data->dte[i-k]) ) / data->dp[i]
+				+ 0.5*log(data->dp[i]/data->dp[i-k])/dleft;
+			
+			data->derl[i] = data->derg[i] * data->dp[i];
+			data->derg[i] = 0.5 / data->derg[i];
 		}
 		else{
 
@@ -952,23 +988,43 @@ void calc_log_derivative(modelparameters *par, lmdatatype *data)
 				dleft = log(data->dte[i]/data->dte[i-k]);
 			}
 
-			data->derg[i] = dleft*log(data->dp[i+j])
-				/ ( drigth*log(data->dte[i+j]/data->dte[i-k]) )
+			if(data->dte[i-k] == 0){
+				/* using t*dp/dt, to avoid infinities and NaNs */
+				//data->derg[i] = (data->dte[i]/data->dp[i])
+				//	* ( (data->dte[i]-data->dte[i-k])*data->dp[i+j]/
+				//	((data->dte[i+j]-data->dte[i])*(data->dte[i+j]-data->dte[i-k]))
 
-				+ log(data->dte[i+j]*data->dte[i-k] /
-				(data->dte[i]*data->dte[i]))
-				*log(data->dp[i])
-				/ ( drigth*dleft )
+				//	+ (data->dte[i+j]+data->dte[i-k]-2.0*data->dte[i])*data->dp[i]/
+				//	((data->dte[i+j]-data->dte[i])*(data->dte[i]-data->dte[i-k]))
 
-				- drigth*log(data->dp[i-k])
-				/ ( dleft*log(data->dte[i+j]/data->dte[i-k]) );
+				//	- (data->dte[i+j]-data->dte[i])*data->dp[i-k]/
+				//	((data->dte[i]-data->dte[i-k])*(data->dte[i+j]-data->dte[i-k])) );
+                data->derg[i] = log(data->dp[i+j]/data->dp[i])/drigth;
+				
+				data->derl[i] = data->derg[i] * data->dp[i];
+				data->derg[i] = 0.5 / data->derg[i];
+			}
+			else{
+				data->derg[i] = dleft*log(data->dp[i+j])
+					/ ( drigth*log(data->dte[i+j]/data->dte[i-k]) )
+
+					+ log(data->dte[i+j]*data->dte[i-k] /
+					(data->dte[i]*data->dte[i]))
+					*log(data->dp[i]) / ( drigth*dleft )
+
+					- drigth*log(data->dp[i-k])
+					/ ( dleft*log(data->dte[i+j]/data->dte[i-k]) );
+				
+				data->derl[i] = data->derg[i] * data->dp[i];
+				data->derg[i] = 0.5 / data->derg[i];
+			}
 		}
 
 		/***************** Bourdet logarithmic derivative ********************/
-		data->derl[i] = data->derg[i] * data->dp[i];
+		//data->derl[i] = data->derg[i] * data->dp[i];
 
 		/***** group dp/(2*derl) (Chow, Onur, Reynolds, Duong, Ozkan) ********/
-		data->derg[i] = 0.5 / data->derg[i];
+		//data->derg[i] = 0.5 / data->derg[i];
 
 		i++;
 		j = k = 1;
@@ -1464,16 +1520,17 @@ void print_par(FILE *file, double *x, double *ci, double **corr, int n,
 
 /**
 */
-void write_outfile(modelparameters *par, lmdatatype *data, double *x,
+void write_par_outfile(modelparameters *par, lmdatatype *data, double *x,
 				   double *ci, double **corr)
 {
-	int     j, n, m;
+	int  n;
+	char strtmp[LENGTENTRY];
 	FILE*   outfile;
 
-	n = par->n;
-	m = par->m;
+    n = par->n;
 
-	outfile = fopen(par->outfile, "w");
+	strcat(strcpy(strtmp, par->outfile), ".par");
+	outfile = fopen(strtmp, "w");
 	if (outfile == NULL){
 		printf("\n cannot open out file: \n");
 		exit(EXIT_FAILURE);
@@ -1481,9 +1538,36 @@ void write_outfile(modelparameters *par, lmdatatype *data, double *x,
 
 	print_par(outfile, x, ci, corr, n, par);
 
-	fprintf(outfile, "Model (t, p, dt, dte, dp, derlog): \n");
+	fclose(outfile);
+
+	return;
+}
+/*****************************************************************************/
+
+
+
+/**
+*/
+void write_mod_outfile(modelparameters *par, lmdatatype *data, double *x,
+				   double *ci, double **corr)
+{
+	int     j, n, m;
+	char strtmp[LENGTENTRY];
+	FILE*   outfile;
+
+	n = par->n;
+	m = par->m;
+
+	strcat(strcpy(strtmp, par->outfile), ".csv");
+	outfile = fopen(strtmp, "w");
+	if (outfile == NULL){
+		printf("\n cannot open out file: \n");
+		exit(EXIT_FAILURE);
+	}
+
+	fprintf(outfile, "t, p, dt, dte, dp, derlog \n");
 	for (j = 0; j < m; j++){
-		fprintf(outfile, "%12g %12g %12g %12g %12g %12g \n",
+		fprintf(outfile, "%12g, %12g, %12g, %12g, %12g, %12g \n",
 			data->t[j],
 			data->p[j],
 			data->dt[j],
